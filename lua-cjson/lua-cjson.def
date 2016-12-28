@@ -1,0 +1,5 @@
+LIBRARY	"cjson"
+
+EXPORTS
+	luaopen_cjson
+	luaopen_cjson_safe
