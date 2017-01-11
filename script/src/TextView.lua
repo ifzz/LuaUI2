@@ -330,7 +330,7 @@ function TextView:GenMatrix()
 	
 	while ch_data do
 		if max_h < ch_data.h then
-			print("max_h update:", max_h, )
+			print("max_h update:", max_h)
 			max_h = ch_data.h;
 		end
 		if ch_data.ch == 0x0A then

@@ -2,10 +2,9 @@
 	-- jit.off(true, true)
 -- end
 
--- TODO 这里怎么弄一个相对路径
-package.cpath = "D:\\chenshi\\LuaUI2\\Debug\\?.dll"
--- package.cpath = "E:\\myworks\\LuaUI2\\Release\\?.dll"
-package.path = "D:\\chenshi\\LuaUI2\\script\\src\\?.lua"
+-- 这里用一个相对路径
+package.cpath = "Debug\\?.dll"
+package.path = "script\\src\\?.lua"
 
 --[[
 local curl = require("curl");
