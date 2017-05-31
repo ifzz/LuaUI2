@@ -7,10 +7,11 @@
 #include "stdafx.h"
 #include "atlstr.h"
 #include "LuaUI2.h"
-#include "HostWindow.h"
-#include "Sprite.h"
+#include "HostWindowLua.h"
+#include "SpriteLua.h"
+#include "BuildinSprites.h"
 #include "EditSprite.h"
-#include "CanvasSprite.h"
+#include "CanvasSpriteLua.h"
 #include "LuaHttp.h"
 #include "WinApi.h"
 #include "LuaBitmap.h"
@@ -18,6 +19,8 @@
 
 lua_State *g_L;
 static Gdiplus::GdiplusStartupOutput gdipHook;
+
+using namespace cs;
 
 // 这个文件只存放关于GUI的东西
 
@@ -28,26 +31,17 @@ int l_PostQuitMessage(lua_State *L)
 	return 0;
 }
 
-int l_CreateBitmapFromFile(lua_State *L)
+int l_CreateBitmap(lua_State *L)
 {
-	CStringW path = luaL_checkwstring(L, 1);
-	LuaBitmap *p = LuaBitmap::FromFile(path);
-	if (p->Get())
-	{
-		p->PushToLua(L); // TODO 这里还要研究一下
-	}
-	else
-	{
-		lua_pushnil(L);
-	}
-	p->Unref();
-	return 1;
+    LuaBitmap *p = new LuaBitmap;
+    p->PushToLua(L);
+    p->Unref();
+    return 1;
 }
 
 int l_CreateHostWindow(lua_State *L)
 {
-	HostWindow *p = NULL;
-	HostWindow::CreateInstance(&p);
+	HostWindowLua *p = new HostWindowLua;
 	p->PushToLua(L);
 	p->Unref();
 	return 1;
@@ -55,17 +49,19 @@ int l_CreateHostWindow(lua_State *L)
 
 int l_CreateSprite(lua_State *L)
 {
-	Sprite *p = NULL;
-	Sprite::CreateInstance(&p);
-	p->PushToLua(L);
-	p->Unref();
+    auto ptr = MakeRefPtr<SpriteLua>();
+    //RefPtr<SpriteLua> ptr;
+    //ptr.Reset(new SpriteLua);
+	ptr->PushToLua(L);
+    //WeakPtr<SpriteLua> weak;
+    //weak = ptr->GetWeakPtr<SpriteLua>();
+	//p->Unref();
 	return 1;
 }
 
 int l_CreateRectangleSprite(lua_State *L)
 {
-	RectangleSprite *p = NULL;
-	RectangleSprite::CreateInstance(&p);
+	RectangleSprite *p = new RectangleSprite;
 	p->PushToLua(L);
 	p->Unref();
 	return 1;
@@ -73,30 +69,26 @@ int l_CreateRectangleSprite(lua_State *L)
 
 int l_CreateTextSprite(lua_State *L)
 {
-	TextSprite *p = NULL;
-	TextSprite::CreateInstance(&p);
-	p->PushToLua(L);
-	p->Unref();
+    RefPtr<TextSprite> ptr;
+    ptr.Reset(new TextSprite);
+	ptr->PushToLua(L);
+	//p->Unref();
 	return 1;
 }
 
 int l_CreateEditSprite(lua_State *L)
 {
-	EditSprite *p = NULL;
-	EditSprite::CreateInstance(&p);
+    auto p = MakeRefPtr<EditSprite>();
 	p->PushToLua(L);
-	p->Unref();
 	return 1;
 }
-
-int l_CreateCanvasSprite(lua_State *L)
-{
-	CanvasSprite *p = NULL;
-	CanvasSprite::CreateInstance(&p);
-	p->PushToLua(L);
-	p->Unref();
-	return 1;
-}
+//int l_CreateCanvasSprite(lua_State *L)
+//{
+//    CanvasSpriteLua *p = new CanvasSpriteLua();
+//	p->PushToLua(L);
+//	p->Unref();
+//	return 1;
+//}
 
 int l_RunMessageLoop( lua_State *L )
 {
@@ -135,8 +127,8 @@ static const struct luaL_Reg cfunctions[] = {
 	{"CreateRectangleSprite", l_CreateRectangleSprite},
 	{"CreateTextSprite", l_CreateTextSprite},
 	{"CreateEditSprite", l_CreateEditSprite},
-	{"CreateCanvasSprite", l_CreateCanvasSprite},
-	{"CreateBitmapFromFile", l_CreateBitmapFromFile},
+//	{"CreateCanvasSprite", l_CreateCanvasSprite},
+	{"CreateBitmap", l_CreateBitmap},
 	{NULL, NULL}
 };
 
@@ -144,7 +136,6 @@ static const struct luaL_Reg cfunctions[] = {
 extern "C" LUAUI2_API int luaopen_luaui2(lua_State *L)
 {
 	LOG("luaopen_luaui2 -->");
-	KObject::InitMagic();
 	g_L = L;
 
 	ULONG_PTR g_gdipToken;

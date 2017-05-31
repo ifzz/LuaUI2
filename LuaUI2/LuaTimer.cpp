@@ -3,6 +3,8 @@
 
 extern HINSTANCE g_hInstance;
 
+namespace cs {
+
 LuaTimer::LuaTimer(void) :
 	m_hwnd(NULL),
 	m_nextId(0),
@@ -170,3 +172,5 @@ void LuaTimer::DeleteTimer( int id )
 
 	delete pData;
 }
+
+} // namespace cs

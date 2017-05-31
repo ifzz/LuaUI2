@@ -4,10 +4,13 @@
 
 #include "StdAfx.h"
 #include "Sprite.h"
+#include "SpriteLua.h"
 #include "ResourceManager.h"
 #include <cmath>
 
 extern lua_State *g_L; // GUI线程用的主lua state
+
+namespace cs {
 
 Sprite::Sprite(void)
 {
@@ -28,6 +31,9 @@ Sprite::Sprite(void)
 	m_enableFocus = false;
 	m_bMouseIn = false;
 	m_bClipChildren = false;
+    m_bShowCaret = false;
+
+    m_luaSide = NULL;
 }
 
 Sprite::~Sprite(void)
@@ -37,7 +43,7 @@ Sprite::~Sprite(void)
 	while(sp)
 	{
 		Sprite *tmp = sp->m_nextSibling;
-		sp->Unref();
+		sp->Unref(); // FIXME 有没有想过这里其实如果数量太多 会不会爆栈呢? 事实上是一个递归调用.
 		sp = tmp;
 	}
 	m_firstChild = NULL;
@@ -45,31 +51,14 @@ Sprite::~Sprite(void)
 	m_prevSibling = NULL;
 	m_nextSibling = NULL;
 	m_parent = NULL;
-	LOG(<<"deleted:"<< GetClassName()); // FIXME 这里为啥不能多态呢?
+
+    delete m_luaSide;
+	LOG(<<"sprite deleted"); // TODO 加个名字
 }
 
 Gdiplus::RectF Sprite::GetRect()
 {
 	return m_rect;
-}
-
-int Sprite::GetRect( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Gdiplus::RectF rc = thiz->GetRect();
-	lua_pushnumber(L, rc.X);
-	lua_pushnumber(L, rc.Y);
-	lua_pushnumber(L, rc.Width);
-	lua_pushnumber(L, rc.Height);
-	return 4;
-}
-
-int Sprite::GetRectT( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Gdiplus::RectF rc = thiz->GetRect();
-	RectF2LuaRect(L, rc);
-	return 1;
 }
 
 Gdiplus::RectF Sprite::GetAbsRect()
@@ -84,25 +73,6 @@ Gdiplus::RectF Sprite::GetAbsRect()
 		sp = sp->m_parent;
 	}
 	return rcSelf;
-}
-
-int Sprite::GetAbsRect( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Gdiplus::RectF rc = thiz->GetAbsRect();
-	lua_pushnumber(L, rc.X);
-	lua_pushnumber(L, rc.Y);
-	lua_pushnumber(L, rc.Width);
-	lua_pushnumber(L, rc.Height);
-	return 4;
-}
-
-int Sprite::GetAbsRectT(lua_State *L)
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Gdiplus::RectF rc = thiz->GetAbsRect();
-	RectF2LuaRect(L, rc);
-	return 1;
 }
 
 void Sprite::SetRect( Gdiplus::RectF rect )
@@ -120,43 +90,12 @@ void Sprite::SetRect( Gdiplus::RectF rect )
 		// 原先回掉的顺序错了 导致在OnSize里面GetRect和OnSize的参数不一样 诡异错误
 		if (rect.Width != rcOld.Width || rect.Height != rcOld.Height)
 		{
-			lua_State *L = g_L;
-			lua_pushnumber(L, rect.Width);
-			lua_pushnumber(L, rect.Height);
-			InvokeCallback(L, "OnSize", 2, 0);
+            // OnSize(rect.Width, rect.Height);
+            Gdiplus::SizeF size;
+            rect.GetSize(&size);
+            SendNotify(eSizeChanged, &size);
 		}
 	}
-}
-
-int Sprite::SetRect( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Gdiplus::RectF rc;
-	if (lua_istable(L, 2))
-	{
-		lua_getfield(L, 2, "x");
-		rc.X = (float)luaL_checknumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 2, "y");
-		rc.Y = (float)luaL_checknumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 2, "w");
-		rc.Width = (float)luaL_checknumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 2, "h");
-		rc.Height = (float)luaL_checknumber(L, -1);
-		lua_pop(L, 1);
-	}
-	else
-	{
-		rc.X = (float)luaL_checknumber(L, 2);
-		rc.Y = (float)luaL_checknumber(L, 3);
-		rc.Width = (float)luaL_checknumber(L, 4);
-		rc.Height = (float)luaL_checknumber(L, 5);
-
-	}
-	thiz->SetRect(rc);
-	return 0;
 }
 
 void Sprite::Invalidate()
@@ -191,7 +130,7 @@ void Sprite::SetHostWnd( HostWindow *wnd )
 	LOG("END");
 }
 
-void Sprite::OnDraw( lua_State *L, Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty )
+void Sprite::OnDraw( Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty )
 {
 	if (!m_bVisible)
 	{
@@ -210,6 +149,11 @@ void Sprite::OnDraw( lua_State *L, Gdiplus::Graphics &g, const Gdiplus::RectF &r
 		rcClip.Y = 0.0f;
 		g.SetClip(rcClip);
 	}
+    PaintEvent ev;
+    ev.graphics = &g;
+    ev.rcDirty = rcDirty;
+    SendNotify(ePaint, &ev);
+    //this->ClientDraw(g, rcDirty);
 	Sprite *sp = m_firstChild;
 	while(sp)
 	{
@@ -225,7 +169,7 @@ void Sprite::OnDraw( lua_State *L, Gdiplus::Graphics &g, const Gdiplus::RectF &r
 		if (rcDirty.IntersectsWith(rcAbs))
 		{
 			g.TranslateTransform(rc2.X, rc2.Y);
-			sp->OnDraw(L, g, rcDirty);
+			sp->OnDraw(g, rcDirty);
 			g.TranslateTransform(-rc2.X, -rc2.Y);
 		}
 		sp = sp->m_nextSibling;
@@ -234,14 +178,6 @@ void Sprite::OnDraw( lua_State *L, Gdiplus::Graphics &g, const Gdiplus::RectF &r
 	{
 		g.ResetClip();
 	}
-}
-
-int Sprite::AddChild( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Sprite *sprite = CheckLuaObject<Sprite>(L, 2);
-	thiz->AddChild(sprite);
-	return 0;
 }
 
 void Sprite::AddChild( Sprite *sp )
@@ -264,134 +200,94 @@ void Sprite::AddChild( Sprite *sp )
 	sp->Ref();
 }
 
-void Sprite::OnMouseEvent( lua_State *L, MouseEvent *event )
+void Sprite::OnMouseEvent( lua_State *L, MouseEvent *ev )
 {
-	/*
-	Sprite *sp = m_lastChild; // 这里改成从后向前 因为显示的时候是后面遮挡前面的 而且只要有一个触发事件(同级) 就不再继续触发
-	bool bHit = false;
-	while(sp)
-	{
-		Gdiplus::RectF rc2 = sp->GetRect();
-		if (rc2.Contains(event->x, event->y))
-		{
-			if (!bHit)
-			{
-				MouseEvent event2 = *event;
-				event2.x = event->x -  rc2.X;
-				event2.y = event->y - rc2.Y;
-				sp->OnMouseEvent(L, &event2);
-				bHit = true; // 这里只触发一次
-			}
-		}
-		else
-		{
-			// 而OnMouseLeave要确保触发
-			if (WM_MOUSEMOVE == event->message && sp->m_bMouseIn)
-			{
-				sp->m_bMouseIn = false;
-				sp->InvokeCallback(L, "OnMouseLeave", 0, 0);
-			}
-		}
-		sp = sp->m_prevSibling;
-	}
-	*/
-	lua_pushnumber(L, event->x);
-	lua_pushnumber(L, event->y);
-	lua_pushinteger(L, event->flag);
-	switch(event->message)
+	switch(ev->message)
 	{
 	case WM_MOUSEMOVE:
-		InvokeCallback(L, "OnMouseMove", 3, 0); // TODO lua可以终止消息"冒泡" 通过返回"abort"
+        SendNotify(eMouseMove, ev);
+        //OnMouseMove(event->x, event->y, event->flag);
 		if (!m_bMouseIn)
 		{
 			m_bMouseIn = true;
-			InvokeCallback(L, "OnMouseEnter", 0, 0);
+            SendNotify(eMouseEnter, ev);
+			//OnMouseEnter();
 		}
 		break;
 	case WM_MOUSEWHEEL:
-		lua_pushnumber(L, event->delta);
-		InvokeCallback(L, "OnMouseWheel", 4, 0);
+		//OnMouseWheel(event);
+        SendNotify(eMouseWheel, ev);
 		break;
 	case WM_LBUTTONDOWN:
-		InvokeCallback(L, "OnLButtonDown", 3, 0);
+        //OnLButtonDown(event->x, event->y, event->flag);
+        SendNotify(eLBtnDown, ev);
 		if (m_enableFocus)
 		{
 			GetHostWindow()->SetFocusSprite(this);
 		}
 		break;
 	case WM_LBUTTONUP:
-		InvokeCallback(L, "OnLButtonUp", 3, 0);
-		break;
+        //OnLButtonUp(event->x, event->y, event->flag);
+        SendNotify(eLBtnUp, ev);
+        break;
 	case WM_MOUSELEAVE:
 		m_bMouseIn = false;
-		InvokeCallback(L, "OnMouseLeave", 3, 0);
-		break;
+        //OnMouseLeave();
+        SendNotify(eMouseLeave, ev);
+        break;
 	}		
 }
 
-void Sprite::OnCapturedMouseEvent( lua_State *L, MouseEvent *event)
+void Sprite::OnCapturedMouseEvent( lua_State *L, MouseEvent *ev)
 {
-	lua_pushnumber(L, event->x);
-	lua_pushnumber(L, event->y);
-	lua_pushinteger(L, event->flag);
-	switch(event->message)
+	switch(ev->message)
 	{
 	case WM_MOUSEMOVE:
-		InvokeCallback(L, "OnMouseMove", 3, 0);
+        SendNotify(eMouseMove, ev);
+        //OnMouseMove(event->x, event->y, event->flag);
 		break;
 	case WM_LBUTTONDOWN:
-		InvokeCallback(L, "OnLButtonDown", 3, 0);
+        SendNotify(eLBtnDown, ev);
+        //OnLButtonDown(event->x, event->y, event->flag);
 		break;
 	case WM_LBUTTONUP:
-		InvokeCallback(L, "OnLButtonUp", 3, 0);
-		break;
+        SendNotify(eLBtnUp, ev);
+        //OnLButtonUp(event->x, event->y, event->flag);
+        break;
 	}			
 }
 
 void Sprite::OnKeyEvent( lua_State *L, UINT message, DWORD keyCode, DWORD flag )
 {
-	// 只发给焦点对象
-	lua_pushinteger(L, keyCode);
-	lua_pushinteger(L, flag);
+	KeyEvent ev;
+    ev.keyCode = keyCode;
+    ev.flag = flag;
 
 	switch(message)
 	{
 	case WM_KEYDOWN:
-		InvokeCallback(L, "OnKeyDown", 2, 0);
+        SendNotify(eKeyDown, &ev);
+        //OnKeyDown(keyCode, flag);
 		break;
 	case WM_KEYUP:
-		InvokeCallback(L, "OnKeyUp", 2, 0);
+        SendNotify(eKeyUp, &ev);
+        //OnKeyUp(keyCode, flag);
 		break;
 	case WM_CHAR:
-		InvokeCallback(L, "OnChar", 2, 0);
+        SendNotify(eCharInput, &ev);
+        //OnChar(keyCode, flag);
 		break;
 	}
 }
 
+void Sprite::OnImeInput(lua_State *L, LPCTSTR text)
+{
+    SendNotify(eImeInput, const_cast<wchar_t *>(text));
+}
 
 void Sprite::EnableFocus( bool enable )
 {
 	m_enableFocus = enable;
-}
-
-int Sprite::EnableFocus( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	bool enbale = false;
-	if (lua_isnone(L, 2))
-	{
-		enbale = true;
-	}
-	else if (lua_isboolean(L, 2))
-	{
-		enbale = (lua_toboolean(L, 2) != 0);
-	}
-	else
-	{
-		luaL_error(L, "need a boolean value.");
-	}
-	thiz->EnableFocus(enbale);
-	return 0;
 }
 
 HostWindow * Sprite::GetHostWindow()
@@ -404,11 +300,6 @@ HostWindow * Sprite::GetHostWindow()
 	return sp->m_hostWnd;
 }
 
-void Sprite::CreateInstance( Sprite **ppObj )
-{
-	*ppObj = new Sprite;
-}
-
 void Sprite::SetCapture()
 {
 	assert(GetHostWindow()); // 这个在lua包装函数里检查 报成lua错误
@@ -418,13 +309,6 @@ void Sprite::SetCapture()
 	}
 }
 
-int Sprite::SetCapture( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	thiz->SetCapture();
-	return 0;
-}
-
 void Sprite::ReleaseCapture()
 {
 	assert(GetHostWindow()); // 这个在lua包装函数里检查 报成lua错误
@@ -432,13 +316,6 @@ void Sprite::ReleaseCapture()
 	{
 		GetHostWindow()->ReleaseCapture();
 	}
-}
-
-int Sprite::ReleaseCapture( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	thiz->ReleaseCapture();
-	return 0;
 }
 
 void Sprite::BringToFront()
@@ -469,25 +346,6 @@ void Sprite::BringToFront()
 	}
 }
 
-int Sprite::BringToFront( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	thiz->BringToFront();
-	return 0;
-}
-
-void Sprite::OnSetFocus()
-{
-	lua_State *L = g_L; // TODO 这个得改掉 可能是某个基类的成员 m_L
-	InvokeCallback(L, "OnSetFocus", 0, 0);
-}
-
-void Sprite::OnKillFocus()
-{
-	lua_State *L = g_L;
-	InvokeCallback(L, "OnKillFocus", 0, 0);
-}
-
 void Sprite::SetVisible( bool v )
 {
 	if (m_bVisible != v)
@@ -497,33 +355,9 @@ void Sprite::SetVisible( bool v )
 	m_bVisible = v;
 }
 
-int Sprite::SetVisible( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	int b = lua_toboolean(L, 2);
-	thiz->SetVisible(b != 0);
-	return 0;
-}
-
 bool Sprite::GetVisible()
 {
 	return m_bVisible;
-}
-
-int Sprite::GetVisible( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	bool bVisible = thiz->GetVisible();
-	lua_pushboolean(L, bVisible ? 1 : 0);
-	return 1;
-}
-
-int Sprite::SetClipChildren( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	bool bClip = (lua_toboolean(L, 2) != 0);
-	thiz->SetClipChildren(bClip);
-	return 0;
 }
 
 void Sprite::SetClipChildren( bool bClip )
@@ -540,13 +374,7 @@ bool Sprite::GetClipChildren()
 	return m_bClipChildren;
 }
 
-int Sprite::GetClipChildren( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	bool bClip = thiz->GetClipChildren();
-	lua_pushboolean(L, bClip ? 1 : 0);
-	return 1;
-}
+
 
 // http://blog.csdn.net/magic_feng/article/details/6618206
 Sprite * Sprite::DispatchMouseEvent(MouseEvent *event)
@@ -597,25 +425,9 @@ Sprite * Sprite::GetAncestor()
 	return sp;
 }
 
-int Sprite::GetAncestor( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Sprite *sp = thiz->GetAncestor();
-	sp->PushToLua(L);
-	return 1;
-}
-
 Sprite * Sprite::GetParent()
 {
 	return m_parent;
-}
-
-int Sprite::GetParent( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Sprite *sp = thiz->GetParent();
-	sp->PushToLua(L);
-	return 1;
 }
 
 void Sprite::TrackMouseLeave()
@@ -625,13 +437,6 @@ void Sprite::TrackMouseLeave()
 	{
 		wnd->TrackMouseLeave(this);
 	}
-}
-
-int Sprite::TrackMouseLeave( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	thiz->TrackMouseLeave();
-	return 0;
 }
 
 void Sprite::RemoveChild( Sprite *sp )
@@ -673,38 +478,16 @@ void Sprite::RemoveChild( Sprite *sp )
 	sp->Unref();
 }
 
-int Sprite::RemoveChild( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Sprite *sp = CheckLuaObject<Sprite>(L, 2);
-	thiz->RemoveChild(sp);
-	return 0;
-}
-
 Sprite * Sprite::GetNextSprite()
 {
 	return m_nextSibling;
 }
 
-int Sprite::GetNextSprite( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Sprite *sp = thiz->GetNextSprite();
-	sp->PushToLua(L);
-	return 1;
-}
+
 
 Sprite * Sprite::GetPrevSprite()
 {
 	return m_prevSibling;
-}
-
-int Sprite::GetPrevSprite( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Sprite *sp = thiz->GetPrevSprite();
-	sp->PushToLua(L);
-	return 1;
 }
 
 Sprite * Sprite::GetFirstSubSprite()
@@ -712,163 +495,55 @@ Sprite * Sprite::GetFirstSubSprite()
 	return m_firstChild;
 }
 
-int Sprite::GetFirstSubSprite( lua_State *L )
-{
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Sprite *sp = thiz->GetFirstSubSprite();
-	sp->PushToLua(L);
-	return 1;
-}
-
 Sprite * Sprite::GetLastSubSprite()
 {
 	return m_lastChild;
 }
 
-int Sprite::GetLastSubSprite( lua_State *L )
+void Sprite::ShowCaret()
 {
-	Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-	Sprite *sp = thiz->GetLastSubSprite();
-	sp->PushToLua(L);
-	return 1;
+    GetHostWindow()->ShowCaret();
+    m_bShowCaret = true;
 }
 
-TextSprite::TextSprite():m_color(255,0,255)
+void Sprite::SetCaretPos(Gdiplus::RectF rc)
 {
-	m_font = NULL;
-	SetFont(L"宋体", 12, Gdiplus::FontStyleRegular);
-	m_vAlign = Gdiplus::StringAlignmentCenter;
-	m_hAlign = Gdiplus::StringAlignmentCenter;
+    Gdiplus::RectF arc = Sprite::GetAbsRect();
+    GetHostWindow()->SetImePosition(rc.X + arc.X, rc.Y + arc.Y);
+    HWND hwnd = GetHostWindow()->GetHWND();
+    ::DestroyCaret(); // 这里销毁重新建立 才能改变高度
+    ::CreateCaret(hwnd, NULL, (int)rc.Width, (int)rc.Height); // 可以加个参数制定虚线光标(HBITMAP)1
+    ::ShowCaret(hwnd);
+    GetHostWindow()->SetCaretHeight(rc.Height);
+    ::SetCaretPos((int)(rc.X + arc.X), (int)(rc.Y + arc.Y));
 }
 
-TextSprite::~TextSprite()
+void Sprite::HideCaret()
 {
-	m_font = NULL;
+    GetHostWindow()->HideCaret();
+    m_bShowCaret = false;
 }
 
-void TextSprite::SetText( LPCTSTR text )
+LuaObject * Sprite::GetLuaSide()
 {
-	m_text = text;
-	Invalidate();
+    if (!m_luaSide)
+    {
+        m_luaSide = new SpriteLua(this);
+    }
+    return m_luaSide;
 }
 
-int TextSprite::SetText( lua_State *L )
+void Sprite::SendNotify(UINT idMessage, void *message)
 {
-	TextSprite *thiz = CheckLuaObject<TextSprite>(L, 1);
-	CString str = luaL_checkwstring(L, 2);
-	thiz->SetText(str);
-	return 0;
+    if (m_notify)
+        m_notify->OnNotify(m_id, this, idMessage, message);
+    if (m_luaSide)
+        m_luaSide->OnNotify(m_id, this, idMessage, message);
 }
 
-void TextSprite::SetFont( LPCTSTR familyName, float emSize, int style )
+void Sprite::SetNotify(INotify *notify)
 {
-	Gdiplus::Font *font = ResourceManager::Instance()->GetFont(familyName, emSize, style);
-	ATLASSERT(font);
-	m_font = font;
+    m_notify = notify;
 }
 
-int TextSprite::SetFont( lua_State *L )
-{
-	TextSprite *thiz = CheckLuaObject<TextSprite>(L, 1);
-	CString face = luaL_checkwstring(L, 2);
-	float size = (float)luaL_checknumber(L, 3);
-	int style = luaL_checkinteger(L, 4);
-	thiz->SetFont(face, size, style);
-	return 0;
-}
-
-void TextSprite::SetColor( Gdiplus::Color clr )
-{
-	m_color = clr;
-	Invalidate();
-}
-
-int TextSprite::SetColor( lua_State *L )
-{
-	TextSprite *thiz = CheckLuaObject<TextSprite>(L, 1);
-	Gdiplus::Color color = luaL_checkcolor(L, 2);
-	thiz->SetColor(color);
-	return 0;
-}
-
-void TextSprite::OnDraw( lua_State *L, Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty )
-{
-	Gdiplus::SolidBrush brush(m_color);
-	Gdiplus::StringFormat format;
-	format.SetAlignment(m_hAlign);
-	format.SetLineAlignment(m_vAlign);
-	Gdiplus::RectF rc = GetRect();
-	rc.X = 0.0f;
-	rc.Y = 0.0f;
-	g.DrawString(m_text.c_str(), m_text.length(), m_font, rc, &format,&brush);
-}
-
-void TextSprite::SetHAlign( Gdiplus::StringAlignment align )
-{
-	m_hAlign = align;
-}
-
-void TextSprite::CreateInstance( TextSprite **ppObj )
-{
-	*ppObj = new TextSprite;
-}
-
-RectangleSprite::RectangleSprite() :m_color(255, 0, 255), m_borderColor(255, 0, 255)
-{
-}
-
-RectangleSprite::~RectangleSprite()
-{
-}
-
-void RectangleSprite::SetColor( Gdiplus::Color color )
-{
-	if (m_color.GetValue() != color.GetValue())
-	{
-		m_color = color;
-		Invalidate();
-	}
-}
-
-int RectangleSprite::SetColor( lua_State *L )
-{
-	RectangleSprite *thiz = CheckLuaObject<RectangleSprite>(L, 1);
-	Gdiplus::Color color = luaL_checkcolor(L, 2);
-	thiz->SetColor(color);
-	return 0;
-}
-
-void RectangleSprite::SetBorderColor( Gdiplus::Color color )
-{
-	if (m_borderColor.GetValue() != color.GetValue())
-	{
-		m_borderColor = color;
-		Invalidate();
-	}
-}
-
-int RectangleSprite::SetBorderColor( lua_State *L )
-{
-	RectangleSprite *thiz = CheckLuaObject<RectangleSprite>(L, 1);
-	Gdiplus::Color color = luaL_checkcolor(L, 2);
-	thiz->SetBorderColor(color);
-	return 0;
-}
-
-
-void RectangleSprite::OnDraw( lua_State *L, Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty )
-{
-	Gdiplus::SolidBrush brush(m_color);
-	Gdiplus::RectF rc = GetRect();
-	rc.X = 0.0f;
-	rc.Y = 0.0f;
-	g.FillRectangle(&brush, rc);
-	Gdiplus::Pen pen(m_borderColor);
-	g.DrawRectangle(&pen,rc);
-	Sprite::OnDraw(L, g, rcDirty);
-}
-
-void RectangleSprite::CreateInstance( RectangleSprite **ppObj )
-{
-	*ppObj = new RectangleSprite;
-}
+} // namespace cs

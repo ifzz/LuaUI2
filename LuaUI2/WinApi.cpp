@@ -13,14 +13,28 @@
 
 static int l_GetUtf16Table(lua_State *L)
 {
-	CStringW str = luaL_checkwstring(L, 1);
-	lua_newtable(L);
-	for (int i = 0; i < str.GetLength(); i ++)
-	{
-		lua_pushinteger(L, str.GetAt(i));
-		lua_rawseti(L, -2, i + 1);
-	}
-	return 1;
+    const char* psz = luaL_checkstring(L, 1);
+    UINT codePage = luaL_checkinteger(L, 2);
+    int len = ::MultiByteToWideChar(codePage, 0, psz, -1, NULL, 0);
+    if (len > 0)
+    {
+        std::unique_ptr<wchar_t> pwsz;
+        pwsz.reset(new wchar_t[len]);
+        ::MultiByteToWideChar(codePage, 0, psz, -1, pwsz.get(), len);
+
+	    lua_newtable(L);
+	    for (int i = 0; i < len - 1; i ++)
+	    {
+            assert(pwsz.get()[i] != 0);
+		    lua_pushinteger(L, pwsz.get()[i]);
+		    lua_rawseti(L, -2, i + 1);
+	    }
+	    return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 static int l_GetLogicalDrivers(lua_State *L)
@@ -121,6 +135,64 @@ static int l_SHGetFolderPath(lua_State *L)
 	return 0;
 }
 
+static int l_GetOpenFileName(lua_State *L)
+{
+    luaL_checktype(L, 1, LUA_TTABLE);
+    luaL_checktype(L, 2, LUA_TNUMBER);
+
+    std::vector<wchar_t> filters;
+    int i = 1;
+    for (;;)
+    {
+        lua_pushinteger(L, i);
+        lua_gettable(L, 1); // t1[i]
+        if (lua_type(L, -1) == LUA_TSTRING)
+        {
+            CStringW str =  luaL_checkwstring(L, -1);
+            for (int j = 0; j < str.GetLength(); j++)
+            {
+                filters.push_back(str.GetAt(j));
+            }
+            lua_pop(L, 1);
+            filters.push_back(0);
+            i++; // TODO 最后是不是还要检查个数是否为偶数呢? 
+        }
+        else
+        {
+            lua_pop(L, 1); // nil
+            break;
+        }
+    }
+    if (filters.size() == 0)
+    {
+        return 0;
+    }
+    filters.push_back(0);
+
+    WCHAR buf[MAX_PATH] = { 0 };
+
+    OPENFILENAME ofn;
+    ::ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    // 这里必须要填HWND 否则会变成一个非模态对话框 给lua脚本带来困扰
+    ofn.hwndOwner = reinterpret_cast<HWND>(lua_tointeger(L, 2));
+    ofn.lpstrFile = buf;
+    ofn.nMaxFile = ARRAYSIZE(buf);
+    ofn.lpstrFilter = filters.data();
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+    BOOL ret = ::GetOpenFileName(&ofn);
+    if (ret)
+    {
+        luaL_pushwstring(L, buf);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 static const struct luaL_Reg cfunctions[] = {
 	{"GetUtf16Table", l_GetUtf16Table},
 	{"GetLogicalDrivers", l_GetLogicalDrivers},
@@ -129,7 +201,8 @@ static const struct luaL_Reg cfunctions[] = {
 	{"Trace", l_Trace},
 	{"SetCursor", l_SetCursor},
 	{"GetModuleFileName", l_GetModuleFileName},
-	{"SHGetFolderPath", l_SHGetFolderPath},
+    {"SHGetFolderPath", l_SHGetFolderPath},
+    {"GetOpenFileName", l_GetOpenFileName},
 	{ NULL, NULL }
 };
 

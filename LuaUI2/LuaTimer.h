@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <list>
 
+namespace cs {
+
 // 定时器包装 TODO 支持c++使用
 class LuaTimer :
 	public LuaObject
@@ -16,8 +18,6 @@ public:
 	static int SetTimer(lua_State *L);
 	static int ResetTimer(lua_State *L);
 	static int KillTimer(lua_State *L);
-
-	RTTI_DECLARATIONS(LuaTimer, LuaObject)
 
 	BEGIN_LUA_METHOD_MAP(LuaTimer)
 		LUA_METHOD_ENTRY(SetOnceTimer)
@@ -52,3 +52,5 @@ private:
 	int m_nextId;
 	lua_State *m_L;
 };
+
+} // namespace cs

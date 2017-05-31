@@ -7,13 +7,15 @@
 #include "EditSprite.h"
 #include "ResourceManager.h"
 
+extern lua_State *g_L; // GUI线程用的主lua state
+
+namespace cs {
+
 EditSprite::EditSprite()
 {
 	m_font = ResourceManager::Instance()->GetFont(L"微软雅黑", 12, 0);
 	//m_format.SetTrimming(Gdiplus::StringTrimmingNone);
 	m_format.SetFormatFlags(Gdiplus::StringFormatFlagsMeasureTrailingSpaces | Gdiplus::StringFormatFlagsNoWrap | Gdiplus::StringFormatFlagsBypassGDI);
-	m_ptPadding.X = 5;
-	m_ptPadding.Y = 5;
 	m_caretCharPos = 0;
 	m_selectCharPos = NO_SELCET;
 	m_oldSelectCharPos = NO_SELCET;
@@ -22,7 +24,7 @@ EditSprite::EditSprite()
 	m_showCaretCount = 0;
 	m_widthSpace = 0.0f;
 
-	EnableFocus(true);
+	Sprite::EnableFocus(true);
 }
 
 EditSprite::~EditSprite()
@@ -35,31 +37,24 @@ void EditSprite::OnImeInput( lua_State *L, LPCTSTR text )
 	//m_text += text;
 	m_text.insert(m_caretCharPos, text);
 	m_caretCharPos += wcslen(text);
+    Gdiplus::Graphics g(Sprite::GetHostWindow()->GetHWND());
+    UpdateLayout2(g);
 	AdjustScroll(L'A');// 让这个函数认为输入了一个字符
-	Invalidate();
+	Sprite::Invalidate();
 }
 
-void EditSprite::OnDraw( lua_State *L, Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty )
+void EditSprite::ClientDraw(Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty)
 {
-	Gdiplus::RectF rcClip = GetRect();
-	rcClip.X = 0.0f;
-	rcClip.Y = 0.0f;
-	g.SetClip(rcClip); // TODO 这个要弄到基类里 开放给lua
+ //   Gdiplus::RectF rcClip = Sprite::GetRect();
+	//rcClip.X = 0.0f;
+	//rcClip.Y = 0.0f;
+	//g.SetClip(rcClip); // TODO 这个要弄到基类里 开放给lua
 	UpdateLayout2(g);
 	m_caretScreenPos = CalcStringWidth(m_caretCharPos);
 	//AdjustScroll();
 	UpdateImePos(g);
 
 	DrawStringWithSelection(g);
-
-	Gdiplus::Pen pen(Gdiplus::Color(0,0,0));
-	Gdiplus::RectF rc = GetRect();
-	rc.X = 1.0f;
-	rc.Y = 1.0f;
-	rc.Width -= 2.0f;
-	rc.Height -= 2.0f;
-	g.DrawRectangle(&pen, rc);
-	g.ResetClip();
 }
 
 void EditSprite::DrawStringWithSelection( Gdiplus::Graphics &g )
@@ -75,8 +70,7 @@ void EditSprite::DrawStringWithSelection( Gdiplus::Graphics &g )
 
 	Gdiplus::SolidBrush brush(Gdiplus::Color(0, 0, 0));
 	Gdiplus::PointF pt;
-	pt = m_ptPadding;
-	pt = pt + m_ptScroll;
+	pt = m_ptScroll;
 
 
 	if (end - begin > 0 && NO_SELCET != m_selectCharPos)
@@ -135,7 +129,7 @@ void EditSprite::UpdateLayout2( Gdiplus::Graphics &g )
 	wstring tmp;
 
 	Gdiplus::RectF rc, rc2;
-	g.MeasureString(L" ", 1, m_font, m_ptPadding, &rc);
+	g.MeasureString(L" ", 1, m_font, Gdiplus::PointF(0,0), &rc);
 	m_widthSpace = rc.Width;
 	m_textHeight = max(m_textHeight, rc.Height);
 
@@ -147,7 +141,7 @@ void EditSprite::UpdateLayout2( Gdiplus::Graphics &g )
 		{
 			tmp.clear();
 			tmp += m_text[i];
-			g.MeasureString(tmp.c_str(), 1, m_font, m_ptPadding, &rc);
+			g.MeasureString(tmp.c_str(), 1, m_font, Gdiplus::PointF(0, 0), &rc);
 			ti.width = rc.Width - m_widthSpace; //奇葩Gdiplus 实际上是给你在最后加了一个空格
 		}
 		else
@@ -165,12 +159,11 @@ void EditSprite::UpdateLayout2( Gdiplus::Graphics &g )
 
 void EditSprite::UpdateImePos( Gdiplus::Graphics &g )
 {
-	Gdiplus::RectF rc = GetAbsRect();
-	m_ptPadding.Y = (rc.Height - m_textHeight) / 2.0f;
+    Gdiplus::RectF rc = Sprite::GetAbsRect();
 
 	Gdiplus::PointF ptCaret;
-	ptCaret.X = m_caretScreenPos + rc.X + m_ptPadding.X - 2.0f; // TODO FIXME 这个数字从哪里来的 怎么会多 呵呵
-	ptCaret.Y = rc.Y + m_ptPadding.Y;
+	ptCaret.X = m_caretScreenPos + rc.X - 2.0f; // TODO FIXME 这个数字从哪里来的 怎么会多 呵呵
+	ptCaret.Y = rc.Y;
 	ptCaret = ptCaret + m_ptScroll;
 	if (GetHostWindow()->GetFocusSprite() == this) 
 	{
@@ -193,8 +186,7 @@ void EditSprite::DrawSring(Gdiplus::Graphics &g, UINT pos, UINT length, Gdiplus:
 	Gdiplus::SolidBrush brush(color);
 	Gdiplus::PointF pt;
 	//GetRect().GetLocation(&pt);
-	pt = m_ptPadding;
-	pt = pt + m_ptScroll;
+	pt = m_ptScroll;
 
 	// 这里有性能问题的 不该调用3次 而是应该在一个函数里完成
 	// 但是比较方便 以后要是实现"语法高亮"要做一个代码编辑器的话 这个就比较有用
@@ -228,7 +220,7 @@ void EditSprite::OnKeyEvent( lua_State *L, UINT message, DWORD keyCode, DWORD fl
 				{
 					m_text.erase(m_caretCharPos - 1, 1);
 					m_caretCharPos --;
-					Invalidate();
+                    Sprite::Invalidate();
 				}
 			}
 			break;
@@ -241,7 +233,7 @@ void EditSprite::OnKeyEvent( lua_State *L, UINT message, DWORD keyCode, DWORD fl
 			m_text.insert(m_caretCharPos, 1, (wchar_t)keyCode);
 			m_caretCharPos ++;
 			AdjustScroll(keyCode);
-			Invalidate();
+            Sprite::Invalidate();
 			break;
 		}
 		break;
@@ -254,7 +246,7 @@ void EditSprite::OnKeyEvent( lua_State *L, UINT message, DWORD keyCode, DWORD fl
 				m_caretCharPos --;
 			}
 			AdjustScroll(keyCode);
-			Invalidate();
+            Sprite::Invalidate();
 			break;
 		case VK_RIGHT:
 			if (m_caretCharPos < m_vecTextInfo.size())
@@ -262,24 +254,24 @@ void EditSprite::OnKeyEvent( lua_State *L, UINT message, DWORD keyCode, DWORD fl
 				m_caretCharPos ++;
 			}
 			AdjustScroll(keyCode);
-			Invalidate();
+            Sprite::Invalidate();
 			break;
 		case VK_HOME:
 			m_caretCharPos = 0;
 			AdjustScroll(keyCode);
-			Invalidate();
+            Sprite::Invalidate();
 			break;
 		case VK_END:
 			m_caretCharPos = m_vecTextInfo.size();
 			AdjustScroll(keyCode);
-			Invalidate();
+            Sprite::Invalidate();
 			break;
 		case VK_DELETE:
 			if (m_caretCharPos < m_vecTextInfo.size())
 			{
 				m_text.erase(m_caretCharPos, 1);
 			}
-			Invalidate();
+            Sprite::Invalidate();
 		}
 		break;
 	}
@@ -292,7 +284,7 @@ void EditSprite::OnSetFocus()
 {
 	HWND hwnd = GetHostWindow()->GetHWND();
 	::ShowCaret(hwnd);
-	Invalidate();
+    Sprite::Invalidate();
 	m_showCaretCount ++;
 	//LOG("m_showCaretCount:" << m_showCaretCount);
 }
@@ -301,7 +293,7 @@ void EditSprite::OnKillFocus()
 {
 	HWND hwnd = GetHostWindow()->GetHWND();
 	::HideCaret(hwnd);
-	Invalidate();
+    Sprite::Invalidate();
 	m_showCaretCount --;
 	//LOG("m_showCaretCount:" << m_showCaretCount);
 }
@@ -314,7 +306,7 @@ void EditSprite::OnMouseEvent( lua_State *L, MouseEvent *event )
 	UINT flag = event->flag;
 
 	Sprite::OnMouseEvent(L, event);
-	Gdiplus::RectF rc = GetRect();
+    Gdiplus::RectF rc = Sprite::GetRect();
 	rc.X = 0.0f;
 	rc.Y = 0.0f;
 
@@ -329,8 +321,8 @@ void EditSprite::OnMouseEvent( lua_State *L, MouseEvent *event )
 			m_oldSelectCharPos = NO_SELCET;
 			m_bMouseDown = true;
 			//::SetCapture(GetHostWindow()->GetHWND());// 这里不行 因为在引擎层面把消息 屏蔽了(如果不在矩形内)
-			this->SetCapture();
-			Invalidate();
+            Sprite::SetCapture();
+            Sprite::Invalidate();
 		}
 		break;
 	case WM_MOUSEMOVE:
@@ -342,7 +334,7 @@ void EditSprite::OnMouseEvent( lua_State *L, MouseEvent *event )
 			{
 				//LOG("WM_MOUSEMOVE m_selectCharPos:" << m_caretCharPos);
 				m_oldSelectCharPos = m_caretCharPos;
-				Invalidate();
+                Sprite::Invalidate();
 			}
 		}
 		break;
@@ -351,7 +343,7 @@ void EditSprite::OnMouseEvent( lua_State *L, MouseEvent *event )
 		//{
 			LOG("WM_LBUTTONUP");
 			m_bMouseDown = false;
-			this->ReleaseCapture();
+            Sprite::ReleaseCapture();
 		//}
 		break;
 	}
@@ -361,9 +353,8 @@ UINT EditSprite::CharPosFromPoint(float x, float y)
 {
 	//LOG("x:" << x << " y:" << y);
 	Gdiplus::PointF pt(x, y);
-	pt = pt - m_ptPadding;
 	Gdiplus::PointF pt2;
-	GetRect().GetLocation(&pt2);
+    Sprite::GetRect().GetLocation(&pt2);
 	pt = pt - pt2;
 	pt.X = max(0.0f, pt.X);
 	pt.Y = max(0.0f, pt.Y);
@@ -399,8 +390,8 @@ void EditSprite::AdjustScroll(DWORD key)
 	// 这个函数只能操作 m_ptScroll.X 请不要操作别的
 	m_caretScreenPos = CalcStringWidth(m_caretCharPos);
 	float textWidth = CalcStringWidth(UINT(-1)); // 得到所有文字的宽度
-	Gdiplus::RectF rc = GetRect();
-	float pos = m_caretScreenPos + m_ptScroll.X - m_ptPadding.X;
+    Gdiplus::RectF rc = Sprite::GetRect();
+	float pos = m_caretScreenPos + m_ptScroll.X;
 	// TODO m_caretScreenPos 总觉得这个得带上一个m_ptPadding.X 因为在纸上画的时候 发现这样比较好画
 	switch(key)
 	{
@@ -415,12 +406,12 @@ void EditSprite::AdjustScroll(DWORD key)
 		}
 		break;
 	case VK_RIGHT:
-		if (pos > rc.Width  - m_ptPadding.X * 2)
+		if (pos > rc.Width)
 		{
 			m_ptScroll.X -= 50.0f;
-			if (-m_ptScroll.X > textWidth - rc.Width + m_ptPadding.X) //这里其实是需要文字总长度
+			if (-m_ptScroll.X > textWidth - rc.Width) //这里其实是需要文字总长度
 			{
-				m_ptScroll.X = -(textWidth - rc.Width + m_ptPadding.X);
+				m_ptScroll.X = -(textWidth - rc.Width);
 			}
 		}
 		break;
@@ -428,25 +419,22 @@ void EditSprite::AdjustScroll(DWORD key)
 		m_ptScroll.X = 0.0f;
 		break;
 	case VK_END:
-		if (m_caretScreenPos - rc.Width + m_ptPadding.X * 2 > 0)
-			m_ptScroll.X =  -(m_caretScreenPos - rc.Width + m_ptPadding.X * 2);
+		if (m_caretScreenPos - rc.Width > 0)
+			m_ptScroll.X =  -(m_caretScreenPos - rc.Width);
 		break;
 	default:
 		// 输入字符
-		if (m_caretScreenPos - rc.Width + m_ptPadding.X * 2 > - m_ptScroll.X)
+		if (m_caretScreenPos - rc.Width > - m_ptScroll.X)
 		{
-			m_ptScroll.X =  -(m_caretScreenPos - rc.Width + m_ptPadding.X * 2 + m_widthSpace);
+			m_ptScroll.X =  -(m_caretScreenPos - rc.Width + m_widthSpace);
 		}
 	}
 	LOG("m_ptScroll.X:" << m_ptScroll.X << " m_caretScreenPos:" << m_caretScreenPos << " rc.Width:" << rc.Width);
-}
-
-void EditSprite::CreateInstance( EditSprite **ppOjb )
-{
-	*ppOjb = new EditSprite;
 }
 
 void EditSprite::OnCapturedMouseEvent( lua_State *L, MouseEvent *event)
 {
 	OnMouseEvent(L, event);
 }
+
+} // namespace cs

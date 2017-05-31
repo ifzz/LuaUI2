@@ -38,7 +38,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -53,7 +53,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;C:\boost_1_64_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LUAUI2_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -61,6 +61,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4250</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>lua51.lib;gdiplus.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -74,13 +75,14 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;C:\boost_1_64_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LUAUI2_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4250</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>lua51.lib;gdiplus.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -93,13 +95,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="c_bind.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="BuildinSpriteLua.cpp" />
+    <ClCompile Include="BuildinSprites.cpp" />
     <ClCompile Include="CanvasSprite.cpp" />
+    <ClCompile Include="CanvasSpriteLua.cpp" />
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="dllmain.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -111,40 +110,46 @@
     </ClCompile>
     <ClCompile Include="EditSprite.cpp" />
     <ClCompile Include="HostWindow.cpp" />
+    <ClCompile Include="HostWindowLua.cpp" />
     <ClCompile Include="ImeInput.cpp" />
+    <ClCompile Include="LBitmap.cpp" />
     <ClCompile Include="LuaBitmap.cpp" />
     <ClCompile Include="LuaHttp.cpp" />
     <ClCompile Include="LuaObject.cpp" />
     <ClCompile Include="LuaTimer.cpp" />
     <ClCompile Include="LuaUI2.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="SharedObject.cpp" />
     <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="SpriteLua.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="StringBuffer.cpp" />
+    <ClCompile Include="TextEdit.cpp" />
+    <ClCompile Include="TextEditLua.cpp" />
     <ClCompile Include="UniConversion.cpp" />
     <ClCompile Include="WinApi.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="c_bind.h" />
-    <ClInclude Include="CanvasSprite.h" />
+    <ClInclude Include="BuildinSpriteLua.h" />
+    <ClInclude Include="BuildinSprites.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="EditSprite.h" />
     <ClInclude Include="HostWindow.h" />
     <ClInclude Include="ImeInput.h" />
-    <ClInclude Include="KObject.h" />
-    <ClInclude Include="LuaBitmap.h" />
     <ClInclude Include="LuaHttp.h" />
     <ClInclude Include="LuaObject.h" />
-    <ClInclude Include="LuaTimer.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="LuaUI2.h" />
     <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="SharedObject.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="SpriteLua.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StringBuffer.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TextEdit.h" />
+    <ClInclude Include="TextEditLua.h" />
     <ClInclude Include="UniConversion.h" />
     <ClInclude Include="WinApi.h" />
   </ItemGroup>

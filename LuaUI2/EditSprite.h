@@ -6,17 +6,18 @@
 
 #include "Sprite.h"
 
+namespace cs {
+
 class EditSprite : public Sprite
 {
 protected:
-	EditSprite();
 	virtual ~EditSprite();
 public:
-	static void CreateInstance(EditSprite **ppOjb);
+    EditSprite();
 
 	virtual void OnImeInput( lua_State *L, LPCTSTR text);
 
-	virtual void OnDraw( lua_State *L, Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty );
+	virtual void ClientDraw( Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty );
 
 	virtual void OnMouseEvent( lua_State *L, MouseEvent *event );
 
@@ -30,7 +31,7 @@ public:
 
 	BEGIN_LUA_METHOD_MAP(EditSprite)
 		//LUA_METHOD_ENTRY(GetText)
-		LUA_CHAIN_METHOD_MAP(Sprite)
+		LUA_CHAIN_METHOD_MAP(SpriteLua)
 	END_LUA_METHOD_MAP()
 
 private:
@@ -60,7 +61,6 @@ private:
 	float m_textHeight;
 	float m_textWidth;
 	Gdiplus::StringFormat m_format;
-	Gdiplus::PointF m_ptPadding;
 	Gdiplus::PointF m_ptScroll; // Sprite基类的scroll不好用 还是打算控件自己管理吧 因为有边框绘制 还有滚动条 都要避开全面的滚动 并不效率 而且还要有动态创建显示对象 这些东东
 	UINT m_caretCharPos;
 	UINT m_selectCharPos; // 这个和上面那个组成一个选择区域
@@ -73,3 +73,5 @@ private:
 	std::vector<LineInfo> m_vecLineInfo; //多行用这个
 	std::vector<TextInfo> m_vecTextInfo; //单行用这个
 };
+
+} // namespace cs

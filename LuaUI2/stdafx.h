@@ -9,6 +9,7 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
+#include <commdlg.h>
 
 #include <vector>
 #include <string>
@@ -17,6 +18,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <stack>
+#include <memory>
 
 using std::wstring;
 using std::wstringstream;
@@ -30,5 +32,11 @@ using std::stringstream;
 
 #include <GdiPlus.h>
 #include <ShlObj.h>
-//#include <vld.h> //好像有这个ZeroBrane就出故障 出不来界面
+#include <vld.h> //好像有这个ZeroBrane就出故障 出不来界面
 
+//#include <boost/signals2.hpp>
+//#include <boost/shared_ptr.hpp>
+//#include <boost/enable_shared_from_this.hpp>
+//
+//using boost::shared_ptr;
+//using boost::weak_ptr;

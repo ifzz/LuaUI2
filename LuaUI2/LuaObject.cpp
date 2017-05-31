@@ -5,6 +5,28 @@
 #include "StdAfx.h"
 #include "LuaObject.h"
 
+extern lua_State *g_L; // GUI线程用的主lua state
+
+namespace cs {
+
+LuaObject::LuaObject(void) : 
+    m_refUserData(LUA_NOREF),
+    m_L(NULL)
+{
+
+}
+
+LuaObject::~LuaObject(void)
+{
+    if (LUA_NOREF != m_refUserData)
+    {
+        lua_State *L = g_L;
+        GetWeakTable(L);
+        luaL_unref(L, -1, m_refUserData);
+        LOG(<< "luaL_unref");
+    }
+}
+
 int LuaObject::Register( lua_State *L, const char *className )
 {
 	LuaStackCheck check(L);
@@ -24,14 +46,12 @@ int LuaObject::Register( lua_State *L, const char *className )
 	lua_pushvalue(L, methods);
 	lua_setfield(L, metatable, "__metatable"); // 防止lua里篡改
 
-	//lua_pushcfunction(L, SetCallback);
-	//lua_setfield(L, methods, "SetCallback"); // methods.new = SetCallback
-
 	lua_pushcfunction(L, GetCallbacks);
 	lua_setfield(L, methods, "GetCallbacks");
 
 	lua_pushcfunction(L, SetCallbacks);
-	lua_setfield(L, methods, "SetCallbacks");
+	lua_setfield(L, methods, "SetCallbacks"); 
+    // TODO 这里能不能发出一个消息呢? 或打印一点 用来调试脚本逻辑问题 比如替换了对象的消息响应函数
 
 	RegisterMethods(L, methods);
 	// 注册方法
@@ -51,15 +71,11 @@ int LuaObject::Register( lua_State *L, const char *className )
 
 void LuaObject::PushToLua( lua_State *L )
 {
-	if (!this) // FIXME 这样写不知道有没有隐患
-	{
-		lua_pushnil(L);
-		return;
-	}
 	LuaStackCheck check(L);
-	this->Ref();
-	LuaObject ** ppThis = (LuaObject **)lua_newuserdata(L, sizeof(LuaObject *));
-	*ppThis = this;
+	GetCppSide()->Ref();
+    Object ** ppThis = (Object **)lua_newuserdata(L, sizeof(Object *));
+	*ppThis = dynamic_cast<Object*>(this);
+    assert(*ppThis != NULL);
 	int udata = lua_gettop(L);
 
 	// 检查下是不是已经注册过了
@@ -75,49 +91,11 @@ void LuaObject::PushToLua( lua_State *L )
 	check.SetReturn(1);
 }
 
-LuaObject* LuaObject::CheckKObject( lua_State *L, int idx, size_t typeId, const char* typeName )
-{
-	//LuaObject **ppObj = (LuaObject **)luaL_checkudata(L, 1, "LuaObject"); 
-	LuaObject **ppObj = (LuaObject **)lua_touserdata(L, idx);
-	if (ppObj) // 是不是userdata
-	{
-		LuaObject* obj = *ppObj;
-		assert(obj);
-		if (obj->IsValid() && obj->Is(typeId))
-		{
-			return obj;
-		}
-	}
-	luaL_error(L, "C object type checking failed: #%d is not a %s", idx, typeName);
-	return NULL;
-}
-
 int LuaObject::GCMethod( lua_State *L )
 {
-	LuaObject **ppObj = (LuaObject **)lua_touserdata(L, 1);
-	if (ppObj) // 是不是userdata
-	{
-		LuaObject* obj = *ppObj;
-		if(!obj->IsValid())
-		{
-			//assert(false);
-			//LOG(<<"IsValid failed");
-			OutputDebugStringA("GCMethod IsValid failed\r\n");
-			return 0;
-		}
-	}
 	LuaObject *thiz = CheckLuaObject<LuaObject>(L, 1);
 	assert(thiz);
-	if (thiz->RefCount() == 1)
-	{
-		if (LUA_NOREF != thiz->m_refUserData)
-		{
-			thiz->GetWeakTable(L);
-			luaL_unref(L, -1, thiz->m_refUserData);
-		}
-	}
-	thiz->Unref();
-
+	thiz->GetCppSide()->Unref();
 	return 0;
 }
 
@@ -151,6 +129,8 @@ int LuaObject::SetCallbacks( lua_State *L )
 	return 0;
 }
 
+// TODO 考虑能不能改成"多播"的方式 就是多个callback table都是弱引用 放vector里面.
+// 这样好处是c++里面就不用处理回调名称的字符串了,相对高效一点.
 bool LuaObject::InvokeCallback( lua_State *L, const char *name, int nargs, int nresult )
 {
 	if (LUA_NOREF == m_refUserData)
@@ -212,3 +192,10 @@ void LuaObject::GetWeakTable( lua_State *L )
 		lua_rawset(L, LUA_REGISTRYINDEX); //1
 	}
 }
+
+lua_State * LuaObject::GetLuaState()
+{
+    return m_L;
+}
+
+} // namespace cs

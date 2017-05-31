@@ -174,7 +174,7 @@ function RichEdit:new()
 			self._resized = true;
 		end,
 	}
-	self._canvas = luaui2.CreateCanvasSprite();
+	self._canvas = luaui2.CreateSprite();
 	self._canvas:SetCallbacks(self._canvas_event);
 	self._canvas:EnableFocus(true);
 	self._canvas:SetClipChildren(true);

@@ -96,6 +96,12 @@ local Control = {}
 luaui2.Control = Control;
 
 function Control:SetRect(x, y, w, h)
+    -- local sp = self:GetSprite();
+    -- local mt = getmetatable(sp);
+    -- print("sprite metatable", type(mt));
+    -- for k,v in pairs(mt) do
+        -- print(type(k), k, type(v), v)
+    -- end
 	self:GetSprite():SetRect(x, y, w, h)
 end
 
@@ -103,8 +109,32 @@ function Control:GetRect()
 	return self:GetSprite():GetRect()
 end
 
+function Control:SetVisible(v)
+	self:GetSprite():SetVisible(v)
+end
+
+function Control:GetVisible(v)
+	return self:GetSprite():GetVisible()
+end
+
 function Control:GetSprite()
 	assert(false, "pure virtual function_ call");
+end
+
+function Control:GetPreferedWidth()
+	return self.__preffer_width;
+end
+
+function Control:SetPreferedWidth(w)
+	self.__preffer_width = w;
+end
+
+function Control:GetPreferedHeight()
+	return self.__preffer_height;
+end
+
+function Control:SetPreferedHeight(h)
+	self.__preffer_height = h;
 end
 
 local function PointInRect(x, y, rc)
@@ -167,3 +197,18 @@ local function DrawTextureNineInOne(canvas, bmp, offset, width, nine_in_one_info
 end
 
 luaui2.DrawTextureNineInOne = DrawTextureNineInOne
+
+local function CreateConstTable(data)
+	local shell = {}
+	local mt = {}
+	mt.__newindex = function(t, k, v)
+		assert(false);
+	end
+	mt.__index = function(t, k)
+		return data[k];
+	end
+	setmetatable(shell, mt);
+	return shell;
+end
+
+luaui2.CreateConstTable = CreateConstTable;

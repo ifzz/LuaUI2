@@ -12,7 +12,7 @@ function Entry:new()
 	}
 	self._root:SetCallbacks(self._root_event);
 	
-	self._canvas = luaui2.CreateCanvasSprite();
+	self._canvas = luaui2.CreateSprite();
 	math.randomseed(os.time());
 	self._text = "编辑框演示 可以输入中文 逻辑由lua编写"
 	self._utf16 = luaui2.GetUtf16Table(self._text);

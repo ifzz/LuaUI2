@@ -10,6 +10,8 @@
 extern HINSTANCE g_hInstance;
 //extern lua_State *g_L; // 不要这样 尽量带L 不然以后做多State 会有各种问题 还有协程
 
+namespace cs {
+
 #define WM_HTTP_GET			(WM_APP + 1)
 #define WM_HTTP_DOWNLOAD	(WM_APP + 2)
 #define WM_HTTP_PROGRESS	(WM_APP + 3)
@@ -273,3 +275,5 @@ LRESULT CALLBACK LuaHttp::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 	}
 	return ::DefWindowProc(hwnd, msg, wparam, lparam);
 }
+
+} // namespace cs

@@ -124,7 +124,7 @@ function Splitter:OnSplitterLBtnDown(x, y)
 end
 
 function Splitter:OnRootLBtnDown(x, y)
-	print("OnRootLBtnDown", x, y);
+	-- print("OnRootLBtnDown", x, y);
 end
 
 function Splitter:OnRootLBtnUp()

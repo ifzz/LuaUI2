@@ -44,6 +44,7 @@ int LuaTraceBack (lua_State *L);
 static void DebugOutputLine(CString line);
 void LuaShowStack(lua_State *L);
 
+// TODO 把这些都改成大写的 因为这是lua的namespace不能写在里面 以防止以后lua更新之后名字冲突
 CString luaL_checkwstring(lua_State *L, int index);
 void luaL_pushwstring(lua_State *L, LPCTSTR psz, int len = -1);
 Gdiplus::Color luaL_checkcolor(lua_State *L, int index);

@@ -6,39 +6,30 @@
 #include "EventSource.h"
 #include "ImeInput.h"
 
+namespace cs {
+
 class Sprite;
 
+class IMessageHandler
+{
+    LRESULT HandleMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, bool &bHandled);
+};
+
 class HostWindow : 
-	public LuaObject
+	public virtual Object
 {
 protected:
-	// 不允许在栈上创建对象 因为有delete this
-	HostWindow(void);
-	~HostWindow(void);
-
+	virtual ~HostWindow(void); // 保护的析构函数 足以禁止在栈上创建对象
 public:
-	RTTI_DECLARATIONS(HostWindow, LuaObject);
+    HostWindow(void);
 
-	static void CreateInstance(HostWindow **ppObj) { *ppObj = new HostWindow;}
+    void SetRect(Gdiplus::RectF rc);
 
-	// set rect
-	static int SetRect(lua_State *L);
-
-	// set name (class is fixed)
 	static int SetText(lua_State *L);
 
-	// set style
 	static int SetStyle(lua_State *L);
 
-	void Create(HWND parent);
-
-	static int Create(lua_State *L);
-
-	BEGIN_LUA_METHOD_MAP(HostWindow)
-		LUA_METHOD_ENTRY(Create)
-		LUA_METHOD_ENTRY(AttachSprite)
-		LUA_METHOD_ENTRY(SetRect)
-	END_LUA_METHOD_MAP()
+    void Create(HostWindow *parent, Gdiplus::RectF rc, DWORD style, DWORD exStyle);
 
 	static void RegisterWndClass();
 
@@ -46,13 +37,11 @@ public:
 
 	static int LuaHandleMessage(lua_State *L);
 
-	void OnPaint( lua_State *L, HWND hwnd );
+	void OnPaint( HWND hwnd );
 
 	HWND GetHWND();
 
 	void AttachSprite(Sprite *sp);
-
-	static int AttachSprite(lua_State *L);
 
 	void OnImeInput(lua_State *L, LPCTSTR text);
 
@@ -73,6 +62,16 @@ public:
 	void ReleaseCapture();
 
 	void TrackMouseLeave(Sprite *sp);
+
+    enum Event
+    {
+        eHostFirst,
+        eWin32Message,
+        eHostLast
+    };
+
+    virtual void OnSize(float cx, float cy, DWORD flag) {}
+    virtual void OnDestroy() {}
 
 private:
 	void OnMouseEvent(lua_State *L, UINT message, WPARAM wparam, LPARAM lparam);
@@ -95,3 +94,5 @@ private:
 	Sprite *m_spHover;
 	std::tr1::unordered_set<Sprite *> m_setTrackMouseLeave;
 };
+
+} // namespace cs

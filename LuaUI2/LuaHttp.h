@@ -6,6 +6,8 @@
 #include "LuaObject.h"
 #include "..\include\curl\curl.h"
 
+namespace cs {
+
 class LuaRefObject
 {
 public:
@@ -54,8 +56,6 @@ public:
 	static int Get(lua_State *L);
 	static int Post(lua_State *L);
 	static int DownloadToFile(lua_State *L);
-
-	RTTI_DECLARATIONS(LuaHttp, LuaObject)
 
 	BEGIN_LUA_METHOD_MAP(LuaHttp)
 		LUA_METHOD_ENTRY(Get)
@@ -125,3 +125,5 @@ private:
 
 	HWND m_hwnd;
 };
+
+} // namespace cs

@@ -1,8 +1,9 @@
--- if jit then
-	-- jit.off(true, true)
--- end
+if jit then
+	jit.off(true, true)
+    jit.flush();
+end
 
--- 这里用一个相对路径
+-- 这里用一个相对路径 使得ZeroBraneStudio可以双击跳转到代码
 package.cpath = "Debug\\?.dll"
 package.path = "script\\src\\?.lua"
 
@@ -17,51 +18,6 @@ c1:perform();
 ]]
 
 
--- Window Styles
-
-WS_OVERLAPPED       = 0x00000000
-WS_POPUP            = 0x80000000
-WS_CHILD            = 0x40000000
-WS_MINIMIZE         = 0x20000000
-WS_VISIBLE          = 0x10000000
-WS_DISABLED         = 0x08000000
-WS_CLIPSIBLINGS     = 0x04000000
-WS_CLIPCHILDREN     = 0x02000000
-WS_MAXIMIZE         = 0x01000000
-WS_CAPTION          = 0x00C00000
-WS_BORDER           = 0x00800000
-WS_DLGFRAME         = 0x00400000
-WS_VSCROLL          = 0x00200000
-WS_HSCROLL          = 0x00100000
-WS_SYSMENU          = 0x00080000
-WS_THICKFRAME       = 0x00040000
-WS_GROUP            = 0x00020000
-WS_TABSTOP          = 0x00010000
-WS_MINIMIZEBOX      = 0x00020000
-WS_MAXIMIZEBOX      = 0x00010000
-
-
--- Extended Window Styles
-
-WS_EX_DLGMODALFRAME     = 0x00000001
-WS_EX_NOPARENTNOTIFY    = 0x00000004
-WS_EX_TOPMOST           = 0x00000008
-WS_EX_ACCEPTFILES       = 0x00000010
-WS_EX_TRANSPARENT       = 0x00000020
-WS_EX_MDICHILD          = 0x00000040
-WS_EX_TOOLWINDOW        = 0x00000080
-WS_EX_WINDOWEDGE        = 0x00000100
-WS_EX_CLIENTEDGE        = 0x00000200
-WS_EX_CONTEXTHELP       = 0x00000400
-WS_EX_RIGHT             = 0x00001000
-WS_EX_LEFT              = 0x00000000
-WS_EX_RTLREADING        = 0x00002000
-WS_EX_LTRREADING        = 0x00000000
-WS_EX_LEFTSCROLLBAR     = 0x00004000
-WS_EX_RIGHTSCROLLBAR    = 0x00000000
-WS_EX_CONTROLPARENT     = 0x00010000
-WS_EX_STATICEDGE        = 0x00020000
-WS_EX_APPWINDOW         = 0x00040000
 
 print ("package.cpath", package.cpath)
 
@@ -74,110 +30,29 @@ require("TextView")
 require("ImgButton")
 require("Splitter")
 require("Path")
+require("BoxLayout")
+require("ScrollBar")
+require("LineEdit")
+require("Constant")
+ProFi = require("ProFi")
 --require("Entry")
 
 --print = winapi.Trace;
 
-local NaviPanel = {}
-luaui2.LuaInherit(NaviPanel, luaui2.Control);
-
-function NaviPanel:new()
-	local self = luaui2.CreateInstance(NaviPanel);
-	self._root = luaui2.CreateRectangleSprite();
-	self._root:SetColor(255, 255, 255);
-	self._root:SetBorderColor(200, 200, 200);
-	self._btn1 = luaui2.ImgButton:new();
-	self._root:AddChild(self._btn1:GetSprite());
-	self._btn2 = luaui2.ImgButton:new();
-	self._root:AddChild(self._btn2:GetSprite());
---	self._edit = luaui2.CreateEditSprite();
---	self._root:AddChild(self._edit);
-	self._btn3 = luaui2.ImgButton:new();
-	self._btn3:SetText("大家好");
-	self._root:AddChild(self._btn3:GetSprite());
-	self._root_event = {
-		GetName = function()
-			return "NaviPanel";
-		end,
-		OnSize = function(cx, cy)
-			self:OnSize(cx, cy);
-		end
-	}
-	self._root:SetCallbacks(self._root_event);
-	return self;
-end
-
-function NaviPanel:GetSprite()
-	return self._root;
-end
-
-function NaviPanel:OnSize(cx, cy)
-	cy = cy;
-	local padding = 5;
-	local h = 40;
-	local w = cx - padding * 2;
-	self._btn1:SetRect(padding, padding, w, h);
-	self._btn2:SetRect(padding, padding * 2 + h, w, h);
-	self._btn3:SetRect(padding, padding * 3 + h * 2, w, h);
-end
-
-local MainPanel = {}
-luaui2.LuaInherit(MainPanel, luaui2.Control);
-
-function MainPanel:new()
-	local self = luaui2.CreateInstance(MainPanel);
-	self._root = luaui2.CreateSprite();
-	self._tab_ctrl = luaui2.TabCtrl:new();
-	self._root:AddChild(self._tab_ctrl:GetSprite());
-	self._root_event = {
-		GetName = function()
-			return "MainPanel";
-		end,
-		OnSize = function(cx, cy)
-			self:OnSize(cx, cy);
-		end
-	}
-	self._root:SetCallbacks(self._root_event);
-	
-	for i = 1, 10 do 
-		self._tab_ctrl:AddTab("Tab_"..i, nil);
-	end
-	
-	self._rich = luaui2.TextView:new()
-	local path = luaui2.Path:GetExeDir() .. "\\..\\Res\\test.txt";
-	local file = io.open(path, "rb");
---	local file = io.open("d:\\baidu.htm", "rb");
-	if file then
-		local text = file:read("*all");
-		file:close();
-		self._rich:SetText(text);
+local old_print = print;
+print = function(...)
+	old_print(...);
+	local info = debug.getinfo(2, "Sl");
+	local path;
+	if info.source:byte(1) == 64 then
+		path = info.source:sub(2);
 	else
-		print("TextView load path:", path);
+		path = info.source;
 	end
-	self._root:AddChild(self._rich:GetSprite());
-	
-	-- 这里测试 循环引用 内存泄露的问题
-	for _ = 1, 100 do
-		local sp = luaui2.CreateSprite();
-		local event = {
-			OnSize = function()
-				sp:SetRect(0, 0, 100, 100);
-			end,
-		}
-		sp:SetCallbacks(event);
-	end
-	collectgarbage("collect");
-	return self;
+	old_print("\t" .. path .. ":" .. info.currentline .. ":");
 end
 
-function MainPanel:GetSprite()
-	return self._root;
-end
-
-function MainPanel:OnSize(cx, cy)
-	self._tab_ctrl:SetRect(1, 1, cx, 40);
-	self._rich:SetRect(5, 45, cx - 10, cy - 50);
-end
+table.unpack = unpack;
 
 local function TravsereTree(sp, level)
 	local child = sp:GetFirstSubSprite();
@@ -185,7 +60,7 @@ local function TravsereTree(sp, level)
 		local rc = child:GetRectT();
 		local name = ""
 		local tbl = child:GetCallbacks()
-		if type(tbl.GetName) == "function" then
+		if tbl and type(tbl.GetName) == "function" then
 			name = tbl.GetName(); -- 名称 调试用 以后可能会有 GetSpriteByName() 
 		end
 		print(string.format("%s%s%s", string.rep("  ", level), "{"..rc.x..","..rc.y..","..rc.w..","..rc.h.."} ", name));
@@ -211,22 +86,58 @@ local function InitMainUI()
 	spBackground:SetBorderColor(0, 0, 0);
 	g_hostWnd:AttachSprite(spBackground);
 
-	--[[
-
-	local panel2 = MainPanel:new();
-	spBackground:AddChild(panel2:GetSprite());
-	]]
 	local splitter = luaui2.Splitter:new("horizontal");
 	spBackground:AddChild(splitter:GetSprite());
 	
-	local panel1 = NaviPanel:new();
-	splitter:SetFirstChild(panel1);
+	local box1 = luaui2.BoxLayout:new();
+	box1:SetVertical();
+	local btn1 = luaui2.ImgButton:new();
+	btn1:SetText("打开");
+    local _rich;
+	btn1:SetDelegate({
+      OnLButtonUp = function()
+        local path = winapi.GetOpenFileName({"txt files", "*.txt", "all files", "*.*"}, g_hostWnd:GetHWND());
+        print("GetOpenFileName:", path);
+		if not path then
+			return
+		end
+        local file = io.open(path, "rb");
+        if file then
+            local text = file:read("*all");
+            file:close();
+            _rich:SetText(text);
+        else
+            print("Load File Failed:", path);
+        end
+      end});
+	btn1:SetPreferedHeight(25);
+	box1:Append(btn1);
+	local btn2 = luaui2.ImgButton:new();
+	btn2:SetPreferedHeight(25);
+	box1:Append(btn2);
+	local btn3 = luaui2.ImgButton:new();
+	btn3:SetPreferedHeight(25);
+	box1:Append(btn3);
 	
-	local v_splitter = luaui2.Splitter:new("vertical");
-	splitter:SetSecondChild(v_splitter);
+	local edit = luaui2.LineEdit:new();
+	box1:Append(edit);
+	edit:SetPreferedHeight(65);
+-- dit:SetRect(0, 200, 140, 40);
+  
+	-- local btn4 = luaui2.ImgButton:new();
+--	box1:AppendSpace();
+--	local btn5 = luaui2.ImgButton:new();
+--	box1:Append(btn5);
 	
-	local _rich = luaui2.TextView:new()
-	local path = luaui2.Path:GetExeDir() .. "\\..\\Res\\test.txt";
+	-- local panel1 = NaviPanel:new();
+	splitter:SetFirstChild(box1);
+	local sb = luaui2.ScrollBar:new();
+
+--	local v_splitter = luaui2.Splitter:new("vertical");
+--	splitter:SetSecondChild(v_splitter);
+	
+	_rich = luaui2.TextView:new()
+	local path = "Res\\test.txt";
 	local file = io.open(path, "rb");
 --	local file = io.open("d:\\baidu.htm", "rb");
 	if file then
@@ -236,20 +147,27 @@ local function InitMainUI()
 	else
 		print("TextView load path:", path);
 	end
-	v_splitter:SetFirstChild(_rich);
+
+  local box2 = luaui2.BoxLayout:new();
+  box2:SetHorizontal();
+  box2:Append(_rich);
+  box2:Append(sb);
+  splitter:SetSecondChild(box2);
+
 	-- TODO 这里要不要实现一个 AsyncCall呢? 还是逻辑有问题?
 	-- luaui2.TimerManager:SetOnceTimer(100, function()
 		splitter:SetSize(150);
-		v_splitter:SetSize(200);
+--		v_splitter:SetSize(200);
 	-- end);
 	
-	local style = WS_OVERLAPPED;
-	style = bit.bor(style, WS_CAPTION);
-	style = bit.bor(style, WS_SYSMENU);
-	style = bit.bor(style, WS_THICKFRAME);
-	style = bit.bor(style, WS_MINIMIZEBOX);
-	style = bit.bor(style, WS_MAXIMIZEBOX);
-	style = bit.bor(style, WS_VISIBLE);
+	local const = luaui2.const;
+	local style = const.WS_OVERLAPPED;
+	style = bit.bor(style, const.WS_CAPTION);
+	style = bit.bor(style, const.WS_SYSMENU);
+	style = bit.bor(style, const.WS_THICKFRAME);
+	style = bit.bor(style, const.WS_MINIMIZEBOX);
+	style = bit.bor(style, const.WS_MAXIMIZEBOX);
+	style = bit.bor(style, const.WS_VISIBLE);
 	print("style", style)
 	g_hostWnd:Create(0, style, {x = 100, y = 100, w = 600, h = 400});
 
@@ -346,13 +264,33 @@ local function TimerTest()
 	print("timer id:", timer)
 end
 
+local function MemoryTest()
+	print("MemoryTest begin");
+	-- 这里测试 循环引用 内存泄露的问题
+	for _ = 1, 100 do
+		local sp = luaui2.CreateSprite();
+		local event = {
+			OnSize = function()
+				sp:SetRect(0, 0, 100, 100);
+			end,
+		}
+		sp:SetCallbacks(event);
+	end
+	collectgarbage("collect");
+	print("MemoryTest end");
+end
+
 print ("Path:GetAppData()", luaui2.Path:GetAppData())
 
+MemoryTest();
+-- ProFi:start();
 InitMainUI();
 --InitLoginUI();
 --HttpTest();
 --TimerTest();
 
 luaui2.RunMessageLoop();
+-- ProFi:stop();
+-- ProFi:writeReport("ProFi.txt");
 collectgarbage();
 print('----');

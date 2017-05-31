@@ -11,6 +11,8 @@
 extern HINSTANCE g_hInstance;
 extern lua_State *g_L; // GUI线程用的主lua state
 
+namespace cs {
+
 HostWindow::HostWindow(void)
 {
 	m_style = WS_OVERLAPPEDWINDOW|WS_VISIBLE|WS_CLIPCHILDREN|WS_CLIPSIBLINGS;
@@ -48,50 +50,27 @@ HostWindow::~HostWindow(void)
 	m_spFocus = NULL;
 }
 
-int HostWindow::Create( lua_State *L )
+void HostWindow::Create(HostWindow *parent, Gdiplus::RectF rc, DWORD style, DWORD exStyle)
 {
-	HostWindow *thiz = CheckLuaObject<HostWindow>(L, 1);
-
-	if (thiz->m_hwnd != NULL)
-	{
-		luaL_error(L, "HostWindow Create twice");
-		return 0;
-	}
-	DWORD exStyle = luaL_checkinteger(L, 2);
-	DWORD style = luaL_checkinteger(L, 3);
-	Gdiplus::RectF rc = luaL_checkrectf(L, 4);
-	HWND hParent = NULL;
-	if (lua_isuserdata(L, 5))
-	{
-		HostWindow *parent = CheckLuaObject<HostWindow>(L, 5);
-		hParent = parent->GetHWND();
-	}
-	else
-	{
-		hParent = ::GetDesktopWindow();
-	}
-	::CreateWindowEx(exStyle, L"LuaUI2", L"LuaUI2", style,
-		(int)rc.X, (int)rc.Y, (int)rc.Width, (int)rc.Height,
-		hParent, NULL, g_hInstance, thiz);
-	
-	return 0;
+    HWND hParent = NULL;
+    if (!parent)
+    {
+        hParent = ::GetDesktopWindow();
+    }
+    else
+    {
+        hParent = parent->m_hwnd;
+    }
+    //KObject *obj = dynamic_cast<KObject*>(this);
+    //assert(obj != NULL);
+    ::CreateWindowEx(exStyle, L"LuaUI2", L"LuaUI2", style,
+        (int)rc.X, (int)rc.Y, (int)rc.Width, (int)rc.Height,
+        hParent, NULL, g_hInstance, this);
 }
 
-int HostWindow::SetRect(lua_State *L)
+void HostWindow::SetRect(Gdiplus::RectF rc)
 {
-	HostWindow *thiz = CheckLuaObject<HostWindow>(L, 1);
-
-	Gdiplus::RectF rc = luaL_checkrectf(L, 2);
-
-	if (thiz->m_hwnd)
-	{
-		::MoveWindow(thiz->m_hwnd, (int)rc.X, (int)rc.Y, (int)rc.Width, (int)rc.Height, TRUE);
-	}
-	else
-	{
-		luaL_error(L, "HWND == NULL");
-	}
-	return 0;
+    ::MoveWindow(m_hwnd, (int)rc.X, (int)rc.Y, (int)rc.Width, (int)rc.Height, TRUE);
 }
 
 // TODO 记得窗口过程 里面一定要先push HWND message wparam lparam 到lua堆栈里
@@ -122,7 +101,6 @@ LRESULT CALLBACK HostWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 	// TODO 这里少WM_NCDESTROY
 	lua_State *L = g_L;
 	lua_pushcfunction(L, LuaHandleMessage);
-	//lua_pushlightuserdata(L, thiz);
 	lua_pushlightuserdata(L, hwnd);
 	lua_pushnumber(L, msg);
 	lua_pushlightuserdata(L, (void*)wparam);
@@ -203,46 +181,6 @@ void HostWindow::OnMouseEvent(lua_State *L, UINT message, WPARAM wparam, LPARAM 
 				m_setTrackMouseLeave.erase(sp);
 			}
 		//}
-			/*
-			Sprite *hit = m_sprite->HitTest(event.x, event.y);
-			if (hit)
-			{
-				if (hit != m_spHover)
-				{
-					LOG("Hover diff");
-					if (m_spHover)
-					{
-						MouseEvent event2 = event;
-						event2.message = WM_MOUSELEAVE;
-						m_spHover->OnMouseEvent(L, &event2);
-						Sprite *sp = m_spHover;
-						while (sp->GetParent())
-						{
-							sp = sp->GetParent();
-							sp->OnMouseEvent(L, &event2);
-						}
-					}
-					m_spHover = hit;
-				}
-				Gdiplus::RectF rc = hit->GetAbsRect();
-				//LOG("HitTest:"<< rc.X << "," <<rc.Y << "," << rc.Width << "," << rc.Height);
-				event.x -= rc.X;
-				event.y -= rc.Y;
-				hit->OnMouseEvent(L, &event);
-				while (hit->GetParent())
-				{
-					hit = hit->GetParent();
-					hit->OnMouseEvent(L, &event);
-				}
-			}
-			*/
-	//	}
-		/*
-		Gdiplus::RectF rc = m_sprite->GetRect();
-		event.x -= rc.X;
-		event.y -= rc.Y;
-		m_sprite->OnMouseEvent(L, &event);
-		*/
 	}
 }
 
@@ -257,7 +195,7 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 	if (WM_NCCREATE == message)
 	{
 		LPCREATESTRUCT lpcs = reinterpret_cast<LPCREATESTRUCT>(lparam);
-		thiz = reinterpret_cast<HostWindow *>(lpcs->lpCreateParams);
+        thiz = reinterpret_cast<HostWindow*>(lpcs->lpCreateParams);
 		thiz->m_hwnd = hwnd;
 		SetWindowLongPtr(hwnd, GWLP_USERDATA,
 			reinterpret_cast<LPARAM>(thiz));
@@ -266,17 +204,15 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 	{
 		return 0; // return nil
 	} else {
-		thiz = reinterpret_cast<HostWindow *>
-			(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        thiz = reinterpret_cast<HostWindow *>
+            (GetWindowLongPtr(hwnd, GWLP_USERDATA));
 	}
 	assert(NULL != thiz);
-	assert(thiz->IsValid());
-	assert(thiz->Is(HostWindow::TypeIdClass()));
 
 	switch(message)
 	{
 	case WM_PAINT:
-		thiz->OnPaint(L, hwnd);
+		thiz->OnPaint(hwnd);
 		break;
 	case WM_SYNCPAINT:
 		// 上面有窗口拖动的时候 会有1像素宽度和1像素高度的区域 不停的发 而WM_PAINT又是低优先级的
@@ -297,10 +233,7 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 		lua_pushinteger(L, TRUE);
 		return 1;
 	case WM_SIZE:
-		lua_pushinteger(L, LOWORD(lparam));
-		lua_pushinteger(L, HIWORD(lparam));
-		lua_pushinteger(L, wparam);
-		thiz->InvokeCallback(L, "OnSize", 3, 0);
+        thiz->OnSize((float)(short)LOWORD(lparam), (float)(short)HIWORD(lparam), wparam);
 		lua_pushinteger(L, 0);
 		return 1;
 	case WM_KEYDOWN:
@@ -328,7 +261,8 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 		//::ShowCaret(hwnd);
 		if (thiz->m_spFocus)
 		{
-			thiz->m_spFocus->OnSetFocus();
+			//thiz->m_spFocus->OnSetFocus();
+            thiz->m_spFocus->SendNotify(Sprite::eSetFocus, NULL);
 		}
 		lua_pushinteger(L, 0);
 		return 1;
@@ -337,8 +271,9 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 		::DestroyCaret();
 		if (thiz->m_spFocus)
 		{
-			thiz->m_spFocus->OnKillFocus();
-		}
+			//thiz->m_spFocus->OnKillFocus();
+            thiz->m_spFocus->SendNotify(Sprite::eKillFocus, NULL);
+        }
 		lua_pushinteger(L, 0);
 		return 1;
 	case WM_CREATE:
@@ -353,7 +288,7 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 	case WM_CLOSE:
 		break;
 	case WM_DESTROY:
-		thiz->InvokeCallback(L, "OnDestroy", 0, 0);
+        thiz->OnDestroy();
 		lua_pushinteger(L, 0);
 		return 1;
 	}
@@ -372,7 +307,7 @@ void HostWindow::SetGdipMode(Gdiplus::Graphics &g)
 	g.SetInterpolationMode( Gdiplus::InterpolationModeNearestNeighbor );
 }
 
-void HostWindow::OnPaint( lua_State *L, HWND hwnd )
+void HostWindow::OnPaint(HWND hwnd )
 {
 	DWORD startTime = ::GetTickCount();
 	PAINTSTRUCT ps;
@@ -397,7 +332,7 @@ void HostWindow::OnPaint( lua_State *L, HWND hwnd )
 	{
 		Gdiplus::RectF rc = m_sprite->GetRect();
 		gDoubleBuffer.TranslateTransform(rc.X, rc.Y);
-		m_sprite->OnDraw(L, gDoubleBuffer, rcDirty);
+		m_sprite->OnDraw(gDoubleBuffer, rcDirty);
 		gDoubleBuffer.TranslateTransform(-rc.X, -rc.Y);
 	}
 	do 
@@ -448,22 +383,15 @@ void HostWindow::AttachSprite( Sprite *sp )
 	sp->Ref();
 }
 
-int HostWindow::AttachSprite( lua_State *L )
-{
-	HostWindow *thiz =CheckLuaObject<HostWindow>(L, 1);
-	Sprite *sprite = CheckLuaObject<Sprite>(L, 2);
-	thiz->AttachSprite(sprite);
-	return 0;
-}
-
 LRESULT HostWindow::OnImeEvent( lua_State *L, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
+    // TODO 加个开关 能够关闭输入法 当焦点不在输入框上的时候就关闭
 	switch(uMsg)
 	{
 	case WM_IME_SETCONTEXT:
 		do 
 		{
-			LOGW(<<L"WM_IME_SETCONTEXT");
+			LOG(<<"WM_IME_SETCONTEXT");
 			BOOL handled = FALSE;
 			m_ime.CreateImeWindow(GetHWND());
 			m_ime.CleanupComposition(GetHWND());
@@ -471,14 +399,14 @@ LRESULT HostWindow::OnImeEvent( lua_State *L, UINT uMsg, WPARAM wParam, LPARAM l
 		} while (0);
 		return 0;
 	case WM_IME_STARTCOMPOSITION:
-		LOGW(<<L"WM_IME_STARTCOMPOSITION");
+		LOG(<<"WM_IME_STARTCOMPOSITION");
 		m_ime.CreateImeWindow(GetHWND());
 		m_ime.ResetComposition(GetHWND());
 		return 0;
 	case WM_IME_COMPOSITION:
 		do
 		{
-			LOGW(<<L"WM_IME_COMPOSITION");
+			LOG(<<"WM_IME_COMPOSITION");
 			ImeComposition comp;
 			m_ime.UpdateImeWindow(GetHWND());
 			m_ime.GetResult(GetHWND(), lParam, &comp);
@@ -496,14 +424,14 @@ LRESULT HostWindow::OnImeEvent( lua_State *L, UINT uMsg, WPARAM wParam, LPARAM l
 		}while(0);
 		return 0;
 	case WM_IME_ENDCOMPOSITION:
-		LOGW(<<L"WM_IME_ENDCOMPOSITION");
+		LOG(<<"WM_IME_ENDCOMPOSITION");
 		m_ime.ResetComposition(GetHWND());
 		m_ime.DestroyImeWindow(GetHWND());
 		//::ShowCaret(m_hwnd);
 		::DefWindowProc(GetHWND(), uMsg, wParam, lParam);
 		return 0;
 	case WM_INPUTLANGCHANGE:
-		LOGW(<<L"WM_INPUTLANGCHANGE");
+		LOG(<<"WM_INPUTLANGCHANGE");
 		m_ime.SetInputLanguage();
 		::DefWindowProc(GetHWND(), uMsg, wParam, lParam);
 		return 0;
@@ -529,12 +457,14 @@ void HostWindow::SetFocusSprite( Sprite *sp )
 	}
 	if (m_spFocus)
 	{
-		m_spFocus->OnKillFocus();
+		//m_spFocus->OnKillFocus();
+        m_spFocus->SendNotify(Sprite::eKillFocus, NULL);
 	}
 	m_spFocus = sp;
 	if (m_spFocus)
 	{
-		m_spFocus->OnSetFocus();
+		//m_spFocus->OnSetFocus();
+        m_spFocus->SendNotify(Sprite::eSetFocus, NULL);
 	}
 }
 
@@ -590,3 +520,5 @@ void HostWindow::TrackMouseLeave( Sprite *sp )
 	}
 	// TODO Track for the HWND
 }
+
+} // namespace cs
