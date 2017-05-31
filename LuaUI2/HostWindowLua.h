@@ -1,5 +1,6 @@
 #pragma once
 
+#include "HostWindow.h"
 #include "LuaObject.h"
 
 namespace cs {
@@ -7,7 +8,7 @@ namespace cs {
 class HostWindow;
 
 // TODO ¸Ä³ÉNativeWindow
-class HostWindowLua : public LuaObject, public INotify
+class HostWindowLua : public LuaObject, public INotify, public IMessageHandler
 {
 protected:
     virtual ~HostWindowLua();
@@ -28,9 +29,9 @@ public:
 
     virtual Object * GetCppSide();
 
-    virtual void OnNotify(UINT idSender, void *sender, UINT idMessage, void *message);
+    virtual bool OnNotify(UINT idSender, void *sender, UINT idMessage, void *message);
 
-    void HandleMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+    LRESULT HandleMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, bool &bHandled);
 
 private:
     HostWindow *m_wnd;

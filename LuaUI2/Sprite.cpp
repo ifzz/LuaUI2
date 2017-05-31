@@ -535,10 +535,17 @@ LuaObject * Sprite::GetLuaSide()
 
 void Sprite::SendNotify(UINT idMessage, void *message)
 {
-    if (m_notify)
-        m_notify->OnNotify(m_id, this, idMessage, message);
     if (m_luaSide)
-        m_luaSide->OnNotify(m_id, this, idMessage, message);
+    {
+        if (m_luaSide->OnNotify(m_id, this, idMessage, message))
+        { 
+            return;
+        }
+    }
+    if (m_notify)
+    {
+        m_notify->OnNotify(m_id, this, idMessage, message);
+    }
 }
 
 void Sprite::SetNotify(INotify *notify)

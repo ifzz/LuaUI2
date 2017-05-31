@@ -129,23 +129,7 @@ private:
 class INotify
 {
 public:
-    virtual void OnNotify(UINT idSender, void *sender, UINT idMessage, void *message) = 0;
-};
-
-// 好像又不需要这个 可以 void SetNotify(INotify*) override; 呀,
-// 注意有override,而且不要和基类用一个INotify *m_notify就可以了.
-class NotifyInvoker
-{
-public:
-    void Invoke(UINT idSender, void *sender, UINT idMessage, void *message)
-    {
-        if (m_notfy)
-        {
-            m_notfy->OnNotify(idSender, sender, idMessage, message);
-        }
-    }
-private:
-    INotify* m_notfy;
+    virtual bool OnNotify(UINT idSender, void *sender, UINT idMessage, void *message) = 0;
 };
 
 template<typename T>

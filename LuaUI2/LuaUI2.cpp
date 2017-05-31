@@ -41,8 +41,8 @@ int l_CreateBitmap(lua_State *L)
 
 int l_CreateHostWindow(lua_State *L)
 {
-	HostWindowLua *p = new HostWindowLua;
-	p->PushToLua(L);
+	HostWindow *p = new HostWindow;
+    p->GetLuaSide()->PushToLua(L);
 	p->Unref();
 	return 1;
 }
@@ -62,7 +62,7 @@ int l_CreateSprite(lua_State *L)
 int l_CreateRectangleSprite(lua_State *L)
 {
 	RectangleSprite *p = new RectangleSprite;
-	p->PushToLua(L);
+	p->GetLuaSide()->PushToLua(L);
 	p->Unref();
 	return 1;
 }
@@ -71,7 +71,7 @@ int l_CreateTextSprite(lua_State *L)
 {
     RefPtr<TextSprite> ptr;
     ptr.Reset(new TextSprite);
-	ptr->PushToLua(L);
+    ptr->GetLuaSide()->PushToLua(L);
 	//p->Unref();
 	return 1;
 }
@@ -79,7 +79,7 @@ int l_CreateTextSprite(lua_State *L)
 int l_CreateEditSprite(lua_State *L)
 {
     auto p = MakeRefPtr<EditSprite>();
-	p->PushToLua(L);
+    p->GetLuaSide()->PushToLua(L);
 	return 1;
 }
 //int l_CreateCanvasSprite(lua_State *L)

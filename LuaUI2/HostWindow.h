@@ -15,6 +15,8 @@ class IMessageHandler
     LRESULT HandleMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, bool &bHandled);
 };
 
+class HostWindowLua;
+
 class HostWindow : 
 	public virtual Object
 {
@@ -70,9 +72,6 @@ public:
         eHostLast
     };
 
-    virtual void OnSize(float cx, float cy, DWORD flag) {}
-    virtual void OnDestroy() {}
-
 private:
 	void OnMouseEvent(lua_State *L, UINT message, WPARAM wparam, LPARAM lparam);
 	LRESULT OnImeEvent(lua_State *L, UINT message, WPARAM wparam, LPARAM lparam);
@@ -93,6 +92,7 @@ private:
 	Sprite *m_spCapture;
 	Sprite *m_spHover;
 	std::tr1::unordered_set<Sprite *> m_setTrackMouseLeave;
+    HostWindowLua *m_luaSide;
 };
 
 } // namespace cs

@@ -77,7 +77,7 @@ public:
         LUA_METHOD_ENTRY(Invalidate)
     END_LUA_METHOD_MAP()
 
-    virtual void OnNotify(UINT idSender, void *sender, UINT idMessage, void *message) override;
+    virtual bool OnNotify(UINT idSender, void *sender, UINT idMessage, void *message) override;
 
     Object* GetCppSide();
     friend class Sprite;

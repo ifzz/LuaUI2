@@ -4,6 +4,7 @@
 
 #include "StdAfx.h"
 #include "HostWindow.h"
+#include "HostWindowLua.h"
 #include "Common.h"
 #include "Sprite.h"
 
@@ -209,6 +210,8 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 	}
 	assert(NULL != thiz);
 
+    bool bHandled = false;
+
 	switch(message)
 	{
 	case WM_PAINT:
@@ -233,7 +236,8 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 		lua_pushinteger(L, TRUE);
 		return 1;
 	case WM_SIZE:
-        thiz->OnSize((float)(short)LOWORD(lparam), (float)(short)HIWORD(lparam), wparam);
+        //thiz->OnSize((float)(short)LOWORD(lparam), (float)(short)HIWORD(lparam), wparam);
+        thiz->m_luaSide->HandleMessage(hwnd, message, wparam, lparam, bHandled);
 		lua_pushinteger(L, 0);
 		return 1;
 	case WM_KEYDOWN:
@@ -288,7 +292,8 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 	case WM_CLOSE:
 		break;
 	case WM_DESTROY:
-        thiz->OnDestroy();
+        //thiz->OnDestroy();
+        thiz->m_luaSide->HandleMessage(hwnd, message, wparam, lparam, bHandled);
 		lua_pushinteger(L, 0);
 		return 1;
 	}

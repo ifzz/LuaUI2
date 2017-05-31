@@ -61,6 +61,7 @@ int HostWindowLua::SetRect(lua_State *L)
     return 0;
 }
 
+/*
 void HostWindowLua::OnSize(float cx, float cy, DWORD flag)
 {
     lua_State *L = g_L;
@@ -75,6 +76,7 @@ void HostWindowLua::OnDestroy()
     lua_State *L = g_L;
     InvokeCallback(L, "OnDestroy", 0, 0);
 }
+*/
 
 int HostWindowLua::GetHWND(lua_State *L)
 {
@@ -89,21 +91,36 @@ Object * HostWindowLua::GetCppSide()
     return m_wnd;
 }
 
-void HostWindowLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *message)
+bool HostWindowLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *message)
 {
-    MSG *msg;
-    switch (idMessage)
-    {
-    case HostWindow::eWin32Message:
-        msg = reinterpret_cast<MSG *>(message);
-        HandleMessage(msg->hwnd, msg->message, msg->wParam, msg->lParam);
-        break;
-    }
+    return false;
 }
 
-void HostWindowLua::HandleMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+LRESULT HostWindowLua::HandleMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, bool &bHandled)
 {
-
+    lua_State *L = GetLuaState();
+    switch (message)
+    {
+    case WM_SIZE:
+        do {
+            float cx = (float)(short)LOWORD(lparam);
+            float cy = (float)(short)HIWORD(lparam);
+            DWORD flag = wparam;
+            lua_pushnumber(L, cx);
+            lua_pushnumber(L, cy);
+            lua_pushinteger(L, flag);
+            bHandled = InvokeCallback(L, "OnSize", 3, 0);
+        } while (0);
+        break;
+    case WM_DESTROY:
+        do {
+            bHandled = InvokeCallback(L, "OnDestroy", 0, 0);
+        } while (0);
+        break;
+    default:
+        bHandled = false;
+        break;
+    }
 }
 
 } // namespace cs

@@ -242,7 +242,7 @@ int SpriteLua::RemoveChild(lua_State *L)
 
 //////////////////////////////////////////////////////////////////////////
 
-void SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *message)
+bool SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *message)
 {
     lua_State *L = g_L;
     switch (idMessage)
@@ -254,7 +254,7 @@ void SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *mess
             CanvasSprite *canvas = new CanvasSprite(ev->graphics);
             canvas->GetLuaSide()->PushToLua(L);
             canvas->Unref();
-            InvokeCallback(L, "OnDraw", 1, 0);
+            return InvokeCallback(L, "OnDraw", 1, 0);
         } while (0);
         break;
     case Sprite::eSizeChanged:
@@ -262,7 +262,7 @@ void SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *mess
             Gdiplus::SizeF *size = reinterpret_cast<Gdiplus::SizeF *>(message);
             lua_pushnumber(L, size->Width);
             lua_pushnumber(L, size->Height);
-            InvokeCallback(L, "OnSize", 2, 0);
+            return InvokeCallback(L, "OnSize", 2, 0);
         } while (0);
         break;
     case Sprite::eMouseMove:
@@ -271,14 +271,14 @@ void SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *mess
             lua_pushnumber(L, ev->x);
             lua_pushnumber(L, ev->y);
             lua_pushinteger(L, ev->flag);
-            InvokeCallback(L, "OnMouseMove", 3, 0);
+            return InvokeCallback(L, "OnMouseMove", 3, 0);
         } while (0);
         break;
     case Sprite::eMouseEnter:
-        InvokeCallback(L, "OnMouseEnter", 1, 0);
+        return InvokeCallback(L, "OnMouseEnter", 1, 0);
         break;
     case Sprite::eMouseLeave:
-        InvokeCallback(L, "OnMouseLeave", 0, 0);
+        return InvokeCallback(L, "OnMouseLeave", 0, 0);
         break;
     case Sprite::eMouseWheel:
         do {
@@ -287,7 +287,7 @@ void SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *mess
             lua_pushnumber(L, ev->y);
             lua_pushinteger(L, ev->flag);
             lua_pushnumber(L, ev->delta);
-            InvokeCallback(L, "OnMouseWheel", 4, 0);
+            return InvokeCallback(L, "OnMouseWheel", 4, 0);
         } while (0);
         break;
     case Sprite::eLBtnDown:
@@ -296,7 +296,7 @@ void SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *mess
             lua_pushnumber(L, ev->x);
             lua_pushnumber(L, ev->y);
             lua_pushinteger(L, ev->flag);
-            InvokeCallback(L, "OnLButtonDown", 3, 0);
+            return InvokeCallback(L, "OnLButtonDown", 3, 0);
         } while (0);
         break;
     case Sprite::eLBtnUp:
@@ -305,14 +305,14 @@ void SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *mess
             lua_pushnumber(L, ev->x);
             lua_pushnumber(L, ev->y);
             lua_pushinteger(L, ev->flag);
-            InvokeCallback(L, "OnLButtonUp", 3, 0);
+            return InvokeCallback(L, "OnLButtonUp", 3, 0);
         } while (0);
         break;
     case Sprite::eSetFocus:
-        InvokeCallback(L, "OnSetFocus", 0, 0);
+        return InvokeCallback(L, "OnSetFocus", 0, 0);
         break;
     case Sprite::eKillFocus:
-        InvokeCallback(L, "OnKillFocus", 0, 0);
+        return InvokeCallback(L, "OnKillFocus", 0, 0);
         break;
     case Sprite::eCharInput:
         do 
@@ -320,10 +320,10 @@ void SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *mess
             KeyEvent *ev = reinterpret_cast<KeyEvent *>(message);
             lua_pushinteger(L, ev->keyCode);
             lua_pushinteger(L, ev->flag);
-            InvokeCallback(L, "OnChar", 2, 0);
+            return InvokeCallback(L, "OnChar", 2, 0);
         } while (0);
     default:
-        break;
+        return false;
     }
 }
 
