@@ -139,17 +139,17 @@ void CanvasSprite::DrawRect( const Gdiplus::RectF& rc )
 	m_pGraphics->FillRectangle(&m_brush, rc);
 }
 
-void CanvasSprite::DrawBitmap( LuaBitmap *bmp, Gdiplus::RectF rcSrc, Gdiplus::RectF rcDst )
+void CanvasSprite::DrawBitmap( BitmapLua *bmp, Gdiplus::RectF rcSrc, Gdiplus::RectF rcDst )
 {
 	m_pGraphics->DrawImage(bmp->Get(), rcDst, rcSrc.X, rcSrc.Y, rcSrc.Width, rcSrc.Height , Gdiplus::UnitPixel);
 }
 
-void CanvasSprite::DrawBitmap( LuaBitmap *bmp, float x , float y, float srcX, float srcY, float srcWidth, float srcHeight )
+void CanvasSprite::DrawBitmap( BitmapLua *bmp, float x , float y, float srcX, float srcY, float srcWidth, float srcHeight )
 {
 	m_pGraphics->DrawImage(bmp->Get(), x, y, srcX, srcY, srcWidth, srcHeight, Gdiplus::UnitPixel);
 }
 
-void CanvasSprite::DrawBitmap( LuaBitmap *bmp, float x , float y )
+void CanvasSprite::DrawBitmap( BitmapLua *bmp, float x , float y )
 {
 	m_pGraphics->DrawImage(bmp->Get(), x, y);
 }

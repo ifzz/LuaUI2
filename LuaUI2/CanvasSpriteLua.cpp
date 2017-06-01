@@ -95,7 +95,7 @@ int CanvasSpriteLua::MeasureString(lua_State *L)
 int CanvasSpriteLua::DrawBitmap(lua_State *L)
 {
     CanvasSprite *thiz = CheckLuaObject<CanvasSpriteLua>(L, 1)->canvas;
-    LuaBitmap *bmp = CheckLuaObject<LuaBitmap>(L, 2); // FIXME
+    BitmapLua *bmp = CheckLuaObject<BitmapLua>(L, 2); // FIXME
     //if (!thiz->m_pGraphics)
     //    luaL_error(L, "no graphics");
     if (lua_istable(L, 3) && lua_istable(L, 4))

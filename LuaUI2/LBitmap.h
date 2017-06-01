@@ -4,11 +4,11 @@
 
 namespace cs {
 
-class LBitmap : public virtual Object
+class Bitmap : public virtual Object
 {
 public:
-    LBitmap();
-    virtual ~LBitmap();
+    Bitmap();
+    virtual ~Bitmap();
 
     bool LoadFromFile(LPCWSTR path);
     Gdiplus::Bitmap * Get() { return m_bmp; }

@@ -33,7 +33,7 @@ int l_PostQuitMessage(lua_State *L)
 
 int l_CreateBitmap(lua_State *L)
 {
-    LuaBitmap *p = new LuaBitmap;
+    BitmapLua *p = new BitmapLua;
     p->PushToLua(L);
     p->Unref();
     return 1;

@@ -3,19 +3,19 @@
 
 namespace cs {
 
-LBitmap::LBitmap() :
+Bitmap::Bitmap() :
     m_bmp(NULL)
 {
 }
 
 
-LBitmap::~LBitmap()
+Bitmap::~Bitmap()
 {
     delete m_bmp;
     m_bmp = NULL;
 }
 
-bool LBitmap::LoadFromFile(LPCWSTR path)
+bool Bitmap::LoadFromFile(LPCWSTR path)
 {
     Gdiplus::Bitmap *loadBmp = Gdiplus::Bitmap::FromFile(path);
     // 这里要拷贝一次 如果是PNG的话 一定生成PARGB格式(性能) pre-multiplied alpha channel
@@ -42,13 +42,13 @@ bool LBitmap::LoadFromFile(LPCWSTR path)
     return true;
 }
 
-Gdiplus::SizeF LBitmap::GetSize()
+Gdiplus::SizeF Bitmap::GetSize()
 {
     assert(m_bmp);
     return Gdiplus::SizeF((float)m_bmp->GetWidth(), (float)m_bmp->GetHeight());
 }
 
-void LBitmap::GetFourStateInfo(std::vector<int> &info)
+void Bitmap::GetFourStateInfo(std::vector<int> &info)
 {
     info.clear();
     if (!m_bmp)
@@ -74,7 +74,7 @@ void LBitmap::GetFourStateInfo(std::vector<int> &info)
     }
 }
 
-void LBitmap::GetNineInOneInfo(std::vector<int> &info)
+void Bitmap::GetNineInOneInfo(std::vector<int> &info)
 {
     info.clear();
     if (!m_bmp)
