@@ -6,8 +6,9 @@ extern lua_State *g_L; // GUI线程用的主lua state
 
 namespace cs {
 
-HostWindowLua::HostWindowLua()
+HostWindowLua::HostWindowLua(HostWindow *wnd)
 {
+    m_wnd = wnd;
 }
 
 HostWindowLua::~HostWindowLua()

@@ -14,7 +14,7 @@
 #include "CanvasSpriteLua.h"
 #include "LuaHttp.h"
 #include "WinApi.h"
-#include "LuaBitmap.h"
+#include "LBitmap.h"
 #include "LuaTimer.h"
 
 lua_State *g_L;
@@ -33,8 +33,8 @@ int l_PostQuitMessage(lua_State *L)
 
 int l_CreateBitmap(lua_State *L)
 {
-    BitmapLua *p = new BitmapLua;
-    p->PushToLua(L);
+    Bitmap *p = new Bitmap;
+    p->GetLuaSide()->PushToLua(L);
     p->Unref();
     return 1;
 }

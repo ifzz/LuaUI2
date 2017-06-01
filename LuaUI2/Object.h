@@ -82,6 +82,8 @@ private:
 	T *m_ptr;
 };
 
+class LuaObject;
+
 class Object
 {
 protected:
@@ -121,6 +123,8 @@ public:
 	{
 		return m_refCount;
 	}
+
+    virtual LuaObject *GetLuaSide() = 0;
 
 private:
 	volatile long m_refCount;

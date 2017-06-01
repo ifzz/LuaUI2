@@ -49,6 +49,8 @@ HostWindow::~HostWindow(void)
 	m_hwnd = NULL;
 	m_sprite = NULL;
 	m_spFocus = NULL;
+    delete m_luaSide;
+    m_luaSide = NULL;
 }
 
 void HostWindow::Create(HostWindow *parent, Gdiplus::RectF rc, DWORD style, DWORD exStyle)
@@ -524,6 +526,15 @@ void HostWindow::TrackMouseLeave( Sprite *sp )
 		m_setTrackMouseLeave.insert(sp);
 	}
 	// TODO Track for the HWND
+}
+
+LuaObject * HostWindow::GetLuaSide()
+{
+    if (!m_luaSide)
+    {
+        m_luaSide = new HostWindowLua(this);
+    }
+    return m_luaSide;
 }
 
 } // namespace cs

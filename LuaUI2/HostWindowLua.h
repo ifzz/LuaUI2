@@ -10,10 +10,9 @@ class HostWindow;
 // TODO ¸Ä³ÉNativeWindow
 class HostWindowLua : public LuaObject, public INotify, public IMessageHandler
 {
-protected:
-    virtual ~HostWindowLua();
 public:
-    HostWindowLua();
+    HostWindowLua(HostWindow *wnd);
+    virtual ~HostWindowLua();
 
     static int Create(lua_State *L);
     static int AttachSprite(lua_State *L);

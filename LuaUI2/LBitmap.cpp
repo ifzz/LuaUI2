@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "LBitmap.h"
+#include "LuaBitmap.h"
 
 namespace cs {
 
 Bitmap::Bitmap() :
-    m_bmp(NULL)
+    m_bmp(NULL),
+    m_luaSide(NULL)
 {
 }
 
@@ -13,6 +15,8 @@ Bitmap::~Bitmap()
 {
     delete m_bmp;
     m_bmp = NULL;
+    delete m_luaSide;
+    m_luaSide = NULL;
 }
 
 bool Bitmap::LoadFromFile(LPCWSTR path)
@@ -114,6 +118,15 @@ void Bitmap::GetNineInOneInfo(std::vector<int> &info)
     {
         info.clear();
     }
+}
+
+LuaObject * Bitmap::GetLuaSide()
+{
+    if (!m_luaSide)
+    {
+        m_luaSide = new BitmapLua(this);
+    }
+    return m_luaSide;
 }
 
 } // namespace cs

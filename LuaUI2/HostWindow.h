@@ -18,7 +18,7 @@ class IMessageHandler
 class HostWindowLua;
 
 class HostWindow : 
-	public virtual Object
+	public Object
 {
 protected:
 	virtual ~HostWindow(void); // 保护的析构函数 足以禁止在栈上创建对象
@@ -64,6 +64,8 @@ public:
 	void ReleaseCapture();
 
 	void TrackMouseLeave(Sprite *sp);
+
+    virtual LuaObject * GetLuaSide() override;
 
     enum Event
     {

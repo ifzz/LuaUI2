@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "LuaBitmap.h"
+#include "LBitmap.h"
 
 namespace cs {
 
-BitmapLua::BitmapLua()
+BitmapLua::BitmapLua(Bitmap *bmp)
 {
+    m_bmp = bmp;
 }
 
 BitmapLua::~BitmapLua()
@@ -13,7 +15,7 @@ BitmapLua::~BitmapLua()
 
 int BitmapLua::LoadFromFile(lua_State *L)
 {
-    Bitmap *thiz = CheckLuaObject<BitmapLua>(L, 1);
+    Bitmap *thiz = CheckLuaObject<BitmapLua>(L, 1)->m_bmp;
     CString path =  luaL_checkwstring(L, 2);
     bool ret = thiz->LoadFromFile(path);
     lua_pushboolean(L, ret ? 1 : 0);
@@ -22,7 +24,7 @@ int BitmapLua::LoadFromFile(lua_State *L)
 
 int BitmapLua::GetSize( lua_State *L )
 {
-	Bitmap *thiz = CheckLuaObject<BitmapLua>(L, 1); 
+    Bitmap *thiz = CheckLuaObject<BitmapLua>(L, 1)->m_bmp;
     auto size = thiz->GetSize();
 	lua_pushnumber(L, size.Width);
     lua_pushnumber(L, size.Height);
@@ -31,7 +33,7 @@ int BitmapLua::GetSize( lua_State *L )
 
 int BitmapLua::GetFourStateInfo( lua_State *L )
 {
-    Bitmap *thiz = CheckLuaObject<BitmapLua>(L, 1);
+    Bitmap *thiz = CheckLuaObject<BitmapLua>(L, 1)->m_bmp;
     std::vector<int> info;
     thiz->GetFourStateInfo(info);
     for (size_t i = 0; i < info.size(); i++)
@@ -43,7 +45,7 @@ int BitmapLua::GetFourStateInfo( lua_State *L )
 
 int BitmapLua::GetNineInOneInfo( lua_State *L )
 {
-    Bitmap *thiz = CheckLuaObject<BitmapLua>(L, 1);
+    Bitmap *thiz = CheckLuaObject<BitmapLua>(L, 1)->m_bmp;
     std::vector<int> info;
     thiz->GetNineInOneInfo(info);
     for (size_t i = 0; i < info.size(); i++)
@@ -51,6 +53,11 @@ int BitmapLua::GetNineInOneInfo( lua_State *L )
         lua_pushinteger(L, info.at(i));
     }
 	return info.size();
+}
+
+Object * BitmapLua::GetCppSide()
+{
+    return m_bmp;
 }
 
 } // namespace cs
