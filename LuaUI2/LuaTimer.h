@@ -6,9 +6,8 @@
 
 namespace cs {
 
-// 定时器包装 TODO 支持c++使用
-class LuaTimer :
-	public LuaObject
+// 定时器包装 TODO 支持c++使用 分成2个类
+class LuaTimer : public LuaObject, public Object
 {
 public:
 	LuaTimer(void);
@@ -32,6 +31,10 @@ private:
 	void OnTimer(UINT id);
 	int NewId();
 	void DeleteTimer(int id);
+
+    virtual Object * GetCppSide() override;
+
+    virtual LuaObject * GetLuaSide() override;
 
 	struct TimerData {
 		TimerData():

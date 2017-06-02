@@ -155,6 +155,9 @@
     <ClInclude Include="CanvasSprite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CanvasSpriteLua.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

@@ -122,6 +122,7 @@ LRESULT HostWindowLua::HandleMessage(HWND hwnd, UINT message, WPARAM wparam, LPA
         bHandled = false;
         break;
     }
+    return 0; // FIXME
 }
 
 } // namespace cs

@@ -276,4 +276,14 @@ LRESULT CALLBACK LuaHttp::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpa
 	return ::DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+Object * LuaHttp::GetCppSide()
+{
+    return NULL;
+}
+
+LuaObject * LuaHttp::GetLuaSide()
+{
+    return NULL;
+}
+
 } // namespace cs

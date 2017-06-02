@@ -49,13 +49,8 @@ int l_CreateHostWindow(lua_State *L)
 
 int l_CreateSprite(lua_State *L)
 {
-    auto ptr = MakeRefPtr<SpriteLua>();
-    //RefPtr<SpriteLua> ptr;
-    //ptr.Reset(new SpriteLua);
-	ptr->PushToLua(L);
-    //WeakPtr<SpriteLua> weak;
-    //weak = ptr->GetWeakPtr<SpriteLua>();
-	//p->Unref();
+    auto ptr = MakeRefPtr<Sprite>();
+	ptr->GetLuaSide()->PushToLua(L);
 	return 1;
 }
 
@@ -72,7 +67,6 @@ int l_CreateTextSprite(lua_State *L)
     RefPtr<TextSprite> ptr;
     ptr.Reset(new TextSprite);
     ptr->GetLuaSide()->PushToLua(L);
-	//p->Unref();
 	return 1;
 }
 

@@ -358,4 +358,9 @@ int SpriteLua::Invalidate(lua_State *L)
     return 0;
 }
 
+Object* SpriteLua::GetCppSide()
+{
+    return m_sp;
+}
+
 } // namespace cs

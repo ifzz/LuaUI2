@@ -135,6 +135,7 @@
     <ClInclude Include="BuildinSpriteLua.h" />
     <ClInclude Include="BuildinSprites.h" />
     <ClInclude Include="CanvasSprite.h" />
+    <ClInclude Include="CanvasSpriteLua.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="EditSprite.h" />
     <ClInclude Include="HostWindow.h" />

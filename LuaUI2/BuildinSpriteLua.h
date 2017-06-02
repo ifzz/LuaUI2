@@ -23,7 +23,7 @@ public:
     BEGIN_LUA_METHOD_MAP(TextSprite)
         LUA_METHOD_ENTRY(SetText)
         LUA_METHOD_ENTRY(SetColor)
-        LUA_METHOD_ENTRY(SetHAlign)
+//        LUA_METHOD_ENTRY(SetHAlign)
         LUA_METHOD_ENTRY(SetFont)
         LUA_CHAIN_METHOD_MAP(SpriteLua)
     END_LUA_METHOD_MAP()

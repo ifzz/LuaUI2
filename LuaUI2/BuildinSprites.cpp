@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "BuildinSprites.h"
+#include "BuildinSpriteLua.h"
 #include "ResourceManager.h"
 
 extern lua_State *g_L; // GUI线程用的主lua state
@@ -55,6 +56,11 @@ void TextSprite::OnDraw(Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty)
 void TextSprite::SetHAlign(Gdiplus::StringAlignment align)
 {
     m_hAlign = align;
+}
+
+LuaObject * TextSprite::GetLuaSide()
+{
+    return m_luaSide;
 }
 
 RectangleSprite::RectangleSprite() :m_color(255, 0, 255), m_borderColor(255, 0, 255)

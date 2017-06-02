@@ -47,7 +47,8 @@ private:
 	int m_ref;
 };
 
-class LuaHttp : public LuaObject
+// TODO 先让它编译过去 以后要改成2个类的
+class LuaHttp : public LuaObject, public Object
 {
 public:
 	LuaHttp(void);
@@ -122,6 +123,10 @@ private:
 	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 	static size_t WriteToStringCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
 	static size_t WriteToFileCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
+
+    virtual Object * GetCppSide() override;
+
+    virtual LuaObject * GetLuaSide() override;
 
 	HWND m_hwnd;
 };

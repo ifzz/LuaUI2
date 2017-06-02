@@ -173,4 +173,14 @@ void LuaTimer::DeleteTimer( int id )
 	delete pData;
 }
 
+Object * LuaTimer::GetCppSide()
+{
+    return NULL;
+}
+
+LuaObject * LuaTimer::GetLuaSide()
+{
+    return NULL;
+}
+
 } // namespace cs
