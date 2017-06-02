@@ -7,7 +7,7 @@
 
 namespace cs {
 
-class LuaBitmap;
+class Bitmap;
 
 class CanvasSpriteLua;
 
@@ -34,9 +34,9 @@ public:
 
 	void MeasureString(const wchar_t *psz, Gdiplus::RectF rc, Gdiplus::RectF *rcOut );
 
-	void DrawBitmap(LuaBitmap *bmp, Gdiplus::RectF rcSrc, Gdiplus::RectF rcDst);
-	void DrawBitmap(LuaBitmap *bmp, float x , float y, float srcX, float srcY, float srcWidth, float srcHeight);
-	void DrawBitmap(LuaBitmap *bmp, float x , float y);
+    void DrawBitmap(Bitmap *bmp, Gdiplus::RectF rcSrc, Gdiplus::RectF rcDst);
+    void DrawBitmap(Bitmap *bmp, float x, float y, float srcX, float srcY, float srcWidth, float srcHeight);
+    void DrawBitmap(Bitmap *bmp, float x, float y);
 
 	void SetColor( const Gdiplus::Color &color );
 
@@ -44,7 +44,7 @@ public:
 
 	//virtual void OnImeInput( lua_State *L, LPCTSTR text ) override;
 
-    CanvasSpriteLua *GetLuaSide();
+    LuaObject *GetLuaSide();
 
 private:
 	Gdiplus::Graphics *m_pGraphics;
