@@ -13,12 +13,15 @@ TextSprite::TextSprite() :m_color(255, 0, 255)
     SetFont(L"ËÎÌו", 12, Gdiplus::FontStyleRegular);
     m_vAlign = Gdiplus::StringAlignmentCenter;
     m_hAlign = Gdiplus::StringAlignmentCenter;
+    m_luaSide = NULL;
 }
 
 TextSprite::~TextSprite()
 {
     delete m_font;
     m_font = NULL;
+    delete m_luaSide;
+    m_luaSide = NULL;
 }
 
 void TextSprite::SetText(LPCTSTR text)
@@ -29,10 +32,17 @@ void TextSprite::SetText(LPCTSTR text)
 
 void TextSprite::SetFont(LPCTSTR familyName, float emSize, int style)
 {
-    //Gdiplus::Font *font = ResourceManager::Instance()->GetFont(familyName, emSize, style);
     Gdiplus::Font *font = new Gdiplus::Font(familyName, emSize, style);
-    ATLASSERT(font);
-    m_font = font;
+    assert(font);
+    if (font->IsAvailable())
+    {
+        delete m_font;
+        m_font = font;
+    }
+	else
+	{
+		delete font;
+	}
 }
 
 void TextSprite::SetColor(Gdiplus::Color clr)
@@ -60,6 +70,10 @@ void TextSprite::SetHAlign(Gdiplus::StringAlignment align)
 
 LuaObject * TextSprite::GetLuaSide()
 {
+    if (!m_luaSide)
+    {
+        m_luaSide = new TextSpriteLua(this);
+    }
     return m_luaSide;
 }
 

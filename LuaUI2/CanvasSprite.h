@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Object.h"
+#include "Common.h"
 
 namespace cs {
 
@@ -46,6 +47,8 @@ public:
 
     LuaObject *GetLuaSide();
 
+    void Close();
+
 private:
 	Gdiplus::Graphics *m_pGraphics;
 	Gdiplus::StringFormat m_format;
@@ -54,6 +57,7 @@ private:
 	Gdiplus::Color m_color;
 	float m_spaceWidth;
     CanvasSpriteLua *m_luaSide;
+    DISALLOW_COPY_AND_ASSIGN(CanvasSprite);
 };
 
 } // namespace cs

@@ -4,7 +4,7 @@
 
 namespace cs {
 
-class TextEdit : public virtual Sprite
+class TextEdit : public Sprite
 {
 protected:
     virtual ~TextEdit();

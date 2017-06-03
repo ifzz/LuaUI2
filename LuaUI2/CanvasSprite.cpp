@@ -144,16 +144,22 @@ void CanvasSprite::DrawRect( const Gdiplus::RectF& rc )
 
 void CanvasSprite::DrawBitmap( Bitmap *bmp, Gdiplus::RectF rcSrc, Gdiplus::RectF rcDst )
 {
+    if (!m_pGraphics)
+        return;
 	m_pGraphics->DrawImage(bmp->Get(), rcDst, rcSrc.X, rcSrc.Y, rcSrc.Width, rcSrc.Height , Gdiplus::UnitPixel);
 }
 
 void CanvasSprite::DrawBitmap( Bitmap *bmp, float x , float y, float srcX, float srcY, float srcWidth, float srcHeight )
 {
+    if (!m_pGraphics)
+        return;
 	m_pGraphics->DrawImage(bmp->Get(), x, y, srcX, srcY, srcWidth, srcHeight, Gdiplus::UnitPixel);
 }
 
 void CanvasSprite::DrawBitmap( Bitmap *bmp, float x , float y )
 {
+    if (!m_pGraphics)
+        return;
 	m_pGraphics->DrawImage(bmp->Get(), x, y);
 }
 
@@ -186,6 +192,11 @@ LuaObject* CanvasSprite::GetLuaSide()
         m_luaSide = new CanvasSpriteLua(this);
     }
     return m_luaSide;
+}
+
+void CanvasSprite::Close()
+{
+    m_pGraphics = NULL;
 }
 
 } // namespace cs
