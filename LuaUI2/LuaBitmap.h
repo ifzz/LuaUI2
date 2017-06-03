@@ -12,7 +12,7 @@ class Bitmap;
 class BitmapLua : public LuaObject
 {
 public:
-	BitmapLua(Bitmap *bmp);
+	explicit BitmapLua(Bitmap *bmp);
 	~BitmapLua();
 
     static int LoadFromFile(lua_State *L);

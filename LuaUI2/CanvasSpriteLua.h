@@ -9,7 +9,7 @@ class CanvasSpriteLua : public LuaObject
 protected:
     virtual ~CanvasSpriteLua();
 public:
-    CanvasSpriteLua(CanvasSprite *c);
+    explicit CanvasSpriteLua(CanvasSprite *c);
 
     static int DrawLine(lua_State *L);
     static int DrawRect(lua_State *L);

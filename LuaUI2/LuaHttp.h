@@ -11,7 +11,7 @@ namespace cs {
 class LuaRefObject
 {
 public:
-	LuaRefObject(lua_State *L) :
+	explicit LuaRefObject(lua_State *L) :
 		m_ref(LUA_NOREF),
 		m_L(L)
 	{

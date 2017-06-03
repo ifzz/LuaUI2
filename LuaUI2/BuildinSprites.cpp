@@ -104,4 +104,13 @@ void RectangleSprite::OnDraw(Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty
     Sprite::OnDraw(g, rcDirty);
 }
 
+LuaObject * RectangleSprite::GetLuaSide()
+{
+    if (!m_luaSide)
+    {
+        m_luaSide = new RectangleSpriteLua(this);
+    }
+    return m_luaSide;
+}
+
 } // namespace cs

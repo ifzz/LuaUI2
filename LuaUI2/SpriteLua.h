@@ -12,7 +12,7 @@ class SpriteLua : public LuaObject, public INotify
 protected:
     virtual ~SpriteLua();
 public:
-    SpriteLua(Sprite *sp);
+    explicit SpriteLua(Sprite *sp);
 
     static int GetRect(lua_State *L);
     static int GetRectT(lua_State *L);

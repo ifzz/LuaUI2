@@ -193,9 +193,9 @@ local function InitMainUI()
 	}
 	g_hostWnd:SetCallbacks(host_wnd_event);
 	
-	luaui2.TimerManager:SetOnceTimer(500, function()
-		DebugSpriteTree(spBackground);
-	end);
+--	luaui2.TimerManager:SetOnceTimer(500, function()
+--		DebugSpriteTree(spBackground);
+--	end);
 end
 
 local function InitLoginUI()

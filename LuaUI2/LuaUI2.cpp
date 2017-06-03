@@ -49,8 +49,9 @@ int l_CreateHostWindow(lua_State *L)
 
 int l_CreateSprite(lua_State *L)
 {
-    auto ptr = MakeRefPtr<Sprite>();
+    auto ptr = new Sprite;
 	ptr->GetLuaSide()->PushToLua(L);
+    ptr->Unref();
 	return 1;
 }
 
@@ -139,6 +140,7 @@ extern "C" LUAUI2_API int luaopen_luaui2(lua_State *L)
 
 	luaL_register(L, "luaui2", cfunctions);
 	
+    /*
 	lua_getglobal(L, "luaui2"); // luaui2
 	LuaHttp *http = new LuaHttp;
 	http->PushToLua(L); // luaui2 LuaHttp
@@ -150,6 +152,7 @@ extern "C" LUAUI2_API int luaopen_luaui2(lua_State *L)
 	timer->Unref();
 	lua_setfield(L, -2, "TimerManager"); // luaui2
 	lua_pop(L, 1);
+    */
 
 	HostWindow::RegisterWndClass();
 

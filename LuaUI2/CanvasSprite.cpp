@@ -14,7 +14,8 @@ namespace cs {
 CanvasSprite::CanvasSprite(Gdiplus::Graphics *g) :
 	m_pGraphics(g),
 	m_brush(Gdiplus::Color(255,0,255)),
-	m_spaceWidth(-1.0f)
+	m_spaceWidth(-1.0f),
+    m_luaSide(NULL)
 {
 	m_format.SetFormatFlags(Gdiplus::StringFormatFlagsMeasureTrailingSpaces | Gdiplus::StringFormatFlagsNoWrap | Gdiplus::StringFormatFlagsBypassGDI);
 	m_font = new Gdiplus::Font(L"Î¢ÈíÑÅºÚ", 12.0f, 0, Gdiplus::UnitPixel, NULL);

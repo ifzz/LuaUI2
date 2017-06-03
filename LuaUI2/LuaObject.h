@@ -32,6 +32,8 @@ public:
 	// 把这个对象放入lua中 创建一个新的userdata包裹之 引用计数+1 lua栈+1
 	void PushToLua(lua_State *L);
 
+    virtual bool OnNotify(UINT idSender, void *sender, UINT idMessage, void *message) { return false; };
+
 	bool InvokeCallback(lua_State *L, const char *name, int nargs, int nresult);
 
     lua_State *GetLuaState();
@@ -43,8 +45,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LuaObject);
 };
 
-#define BEGIN_LUA_METHOD_MAP(x)  virtual const char *GetClassName() {return #x;} \
-virtual void RegisterMethods( lua_State *L, int metatable) {
+#define BEGIN_LUA_METHOD_MAP(x)  virtual const char *GetClassName() override {return #x;} \
+virtual void RegisterMethods( lua_State *L, int metatable) override {
 
 #define LUA_METHOD_ENTRY(x) 	lua_pushcfunction(L, x); lua_setfield(L, metatable, #x);
 
@@ -55,10 +57,10 @@ virtual void RegisterMethods( lua_State *L, int metatable) {
 template<class T>
 T* CheckLuaObject( lua_State *L, int idx)
 {
-	Object **ppObj = (Object **)lua_touserdata(L, idx);
+    LuaObject **ppObj = (LuaObject **)lua_touserdata(L, idx);
 	if (ppObj)
 	{
-		Object* obj = *ppObj;
+        LuaObject* obj = *ppObj;
 		assert(obj);
         T* t = dynamic_cast<T*>(obj);
         if (t)

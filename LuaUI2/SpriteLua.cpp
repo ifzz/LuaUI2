@@ -9,6 +9,7 @@ namespace cs {
 
 SpriteLua::SpriteLua(Sprite *sp)
 {
+    m_sp = sp;
 }
 
 
@@ -130,47 +131,47 @@ int SpriteLua::GetParent(lua_State *L)
 
 int SpriteLua::GetNextSprite(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     if (!thiz->GetNextSprite())
         return 0;
-    SpriteLua *sp = dynamic_cast<SpriteLua*>(thiz->GetNextSprite());
-    sp->PushToLua(L);
+    Sprite *sp = thiz->GetNextSprite();
+    sp->GetLuaSide()->PushToLua(L);
     return 1;
 }
 
 int SpriteLua::GetPrevSprite(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     if (!thiz->GetPrevSprite())
         return 0;
-    SpriteLua *sp = dynamic_cast<SpriteLua*>(thiz->GetPrevSprite());
-    sp->PushToLua(L);
+    Sprite *sp = thiz->GetPrevSprite();
+    sp->GetLuaSide()->PushToLua(L);
     return 1;
 }
 
 int SpriteLua::GetFirstSubSprite(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     if (!thiz->GetFirstSubSprite())
         return 0;
-    SpriteLua *sp = dynamic_cast<SpriteLua*>(thiz->GetFirstSubSprite());
-    sp->PushToLua(L);
+    Sprite *sp = thiz->GetFirstSubSprite();
+    sp->GetLuaSide()->PushToLua(L);
     return 1;
 }
 
 int SpriteLua::GetLastSubSprite(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     if (!thiz->GetLastSubSprite())
         return 0;
-    SpriteLua *sp = dynamic_cast<SpriteLua*>(thiz->GetLastSubSprite());
-    sp->PushToLua(L);
+    Sprite *sp = thiz->GetLastSubSprite();
+    sp->GetLuaSide()->PushToLua(L);
     return 1;
 }
 
 int SpriteLua::EnableFocus(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     bool enbale = false;
     if (lua_isnone(L, 2))
     {
@@ -190,28 +191,28 @@ int SpriteLua::EnableFocus(lua_State *L)
 
 int SpriteLua::SetCapture(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     thiz->SetCapture();
     return 0;
 }
 
 int SpriteLua::ReleaseCapture(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     thiz->ReleaseCapture();
     return 0;
 }
 
 int SpriteLua::BringToFront(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     thiz->BringToFront();
     return 0;
 }
 
 int SpriteLua::SetClipChildren(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     bool bClip = (lua_toboolean(L, 2) != 0);
     thiz->SetClipChildren(bClip);
     return 0;
@@ -219,7 +220,7 @@ int SpriteLua::SetClipChildren(lua_State *L)
 
 int SpriteLua::GetClipChildren(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     bool bClip = thiz->GetClipChildren();
     lua_pushboolean(L, bClip ? 1 : 0);
     return 1;
@@ -227,15 +228,15 @@ int SpriteLua::GetClipChildren(lua_State *L)
 
 int SpriteLua::TrackMouseLeave(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
     thiz->TrackMouseLeave();
     return 0;
 }
 
 int SpriteLua::RemoveChild(lua_State *L)
 {
-    Sprite *thiz = CheckLuaObject<Sprite>(L, 1);
-    Sprite *sp = CheckLuaObject<Sprite>(L, 2);
+    Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
+    Sprite *sp = CheckLuaObject<SpriteLua>(L, 2)->m_sp;
     thiz->RemoveChild(sp);
     return 0;
 }

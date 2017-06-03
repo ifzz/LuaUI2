@@ -12,7 +12,7 @@ typedef std::map<std::string, std::list<int> > EventMapType;
 class EventSource
 {
 public:
-	EventSource(lua_State *L);
+	explicit EventSource(lua_State *L);
 	~EventSource();
 
 	void RegisterEvent(const char* name);

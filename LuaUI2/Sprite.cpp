@@ -34,6 +34,7 @@ Sprite::Sprite(void)
     m_bShowCaret = false;
 
     m_luaSide = NULL;
+    m_notify = NULL;
 }
 
 Sprite::~Sprite(void)
@@ -535,9 +536,9 @@ LuaObject * Sprite::GetLuaSide()
 
 void Sprite::SendNotify(UINT idMessage, void *message)
 {
-    if (m_luaSide)
+    if (GetLuaSide())
     {
-        if (m_luaSide->OnNotify(m_id, this, idMessage, message))
+        if (GetLuaSide()->OnNotify(m_id, this, idMessage, message))
         { 
             return;
         }

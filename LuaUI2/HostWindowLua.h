@@ -11,7 +11,7 @@ class HostWindow;
 class HostWindowLua : public LuaObject, public INotify, public IMessageHandler
 {
 public:
-    HostWindowLua(HostWindow *wnd);
+    explicit HostWindowLua(HostWindow *wnd);
     virtual ~HostWindowLua();
 
     static int Create(lua_State *L);

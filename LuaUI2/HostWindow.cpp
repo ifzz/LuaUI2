@@ -38,6 +38,8 @@ HostWindow::HostWindow(void)
 	m_spHover = NULL;
 
 	m_caretHeight = 20;
+
+    m_luaSide = NULL;
 }
 
 HostWindow::~HostWindow(void)

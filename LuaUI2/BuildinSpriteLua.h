@@ -11,7 +11,7 @@ class TextSpriteLua : public SpriteLua
 protected:
     ~TextSpriteLua();
 public:
-    TextSpriteLua(TextSprite *sp);
+    explicit TextSpriteLua(TextSprite *sp);
 
     static int SetText(lua_State *L);
     static int SetColor(lua_State *L);
@@ -40,7 +40,7 @@ class RectangleSpriteLua : public SpriteLua
 protected:
     ~RectangleSpriteLua();
 public:
-    RectangleSpriteLua(RectangleSprite *sp); 
+    explicit RectangleSpriteLua(RectangleSprite *sp); 
 
     static int SetColor(lua_State *L);
     static int SetBorderColor(lua_State *L);

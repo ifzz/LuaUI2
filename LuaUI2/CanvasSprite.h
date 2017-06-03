@@ -18,7 +18,7 @@ protected:
 	virtual ~CanvasSprite();
 
 public:
-    CanvasSprite(Gdiplus::Graphics *g);
+    explicit CanvasSprite(Gdiplus::Graphics *g);
 
     virtual void ClientDraw(const Gdiplus::RectF &rcDirty) {}
 

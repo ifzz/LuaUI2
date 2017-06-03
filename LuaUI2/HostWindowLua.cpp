@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "HostWindowLua.h"
-#include "Sprite.h"
+#include "SpriteLua.h"
 
 extern lua_State *g_L; // GUI线程用的主lua state
 
@@ -17,7 +17,7 @@ HostWindowLua::~HostWindowLua()
 
 int HostWindowLua::Create(lua_State *L)
 {
-    HostWindow *thiz = CheckLuaObject<HostWindow>(L, 1);
+    HostWindow *thiz = CheckLuaObject<HostWindowLua>(L, 1)->m_wnd;
 
     if (thiz->GetHWND() != NULL)
     {
@@ -31,7 +31,7 @@ int HostWindowLua::Create(lua_State *L)
     HostWindow *parent = NULL;
     if (lua_isuserdata(L, 5))
     {
-        parent = CheckLuaObject<HostWindow>(L, 5);
+        parent = CheckLuaObject<HostWindowLua>(L, 5)->m_wnd;
     }
     thiz->Create(parent, rc, style, exStyle);
 
@@ -40,15 +40,15 @@ int HostWindowLua::Create(lua_State *L)
 
 int HostWindowLua::AttachSprite(lua_State *L)
 {
-    HostWindow *thiz = CheckLuaObject<HostWindow>(L, 1);
-    Sprite *sprite = CheckLuaObject<Sprite>(L, 2);
+    HostWindow *thiz = CheckLuaObject<HostWindowLua>(L, 1)->m_wnd;
+    Sprite *sprite = (Sprite *)CheckLuaObject<SpriteLua>(L, 2)->GetCppSide();
     thiz->AttachSprite(sprite);
     return 0;
 }
 
 int HostWindowLua::SetRect(lua_State *L)
 {
-    HostWindow *thiz = CheckLuaObject<HostWindow>(L, 1);
+    HostWindow *thiz = CheckLuaObject<HostWindowLua>(L, 1)->m_wnd;
     Gdiplus::RectF rc = luaL_checkrectf(L, 2);
 
     if (thiz->GetHWND())
@@ -81,7 +81,7 @@ void HostWindowLua::OnDestroy()
 
 int HostWindowLua::GetHWND(lua_State *L)
 {
-    HostWindow *thiz = CheckLuaObject<HostWindow>(L, 1);
+    HostWindow *thiz = CheckLuaObject<HostWindowLua>(L, 1)->m_wnd;
     HWND hwnd = thiz->GetHWND();
     lua_pushinteger(L, reinterpret_cast<int>(hwnd));
     return 1;

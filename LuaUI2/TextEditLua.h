@@ -9,7 +9,7 @@ namespace cs {
 class TextEditLua : public SpriteLua
 {
 public:
-    TextEditLua(TextEdit *tx);
+    explicit TextEditLua(TextEdit *tx);
     virtual ~TextEditLua();
 
     BEGIN_LUA_METHOD_MAP(TextEdit)

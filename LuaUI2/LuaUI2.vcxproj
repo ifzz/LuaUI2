@@ -139,6 +139,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="EditSprite.h" />
     <ClInclude Include="HostWindow.h" />
+    <ClInclude Include="HostWindowLua.h" />
     <ClInclude Include="ImeInput.h" />
     <ClInclude Include="LuaHttp.h" />
     <ClInclude Include="LuaObject.h" />

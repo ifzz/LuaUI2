@@ -71,11 +71,12 @@ int LuaObject::Register( lua_State *L, const char *className )
 
 void LuaObject::PushToLua( lua_State *L )
 {
+    m_L = L;
 	LuaStackCheck check(L);
 	GetCppSide()->Ref();
-    Object ** ppThis = (Object **)lua_newuserdata(L, sizeof(Object *));
-	*ppThis = dynamic_cast<Object*>(this);
-    assert(*ppThis != NULL);
+    LuaObject ** ppThis = reinterpret_cast<LuaObject **>(lua_newuserdata(L, sizeof(LuaObject *)));
+	*ppThis = this;
+
 	int udata = lua_gettop(L);
 
 	// 检查下是不是已经注册过了

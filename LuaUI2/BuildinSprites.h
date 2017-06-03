@@ -36,6 +36,8 @@ private:
     DISALLOW_COPY_AND_ASSIGN(TextSprite);
 };
 
+class RectangleSpriteLua;
+
 class RectangleSprite : public Sprite
 {
 protected:
@@ -49,9 +51,13 @@ public:
 
     void OnDraw(Gdiplus::Graphics &g, const Gdiplus::RectF &rcDirty) override;
 
+    virtual LuaObject * GetLuaSide() override;
+
 private:
     Gdiplus::Color m_color;
     Gdiplus::Color m_borderColor;
+
+    RectangleSpriteLua *m_luaSide = nullptr;
     DISALLOW_COPY_AND_ASSIGN(RectangleSprite);
 };
 
