@@ -7,7 +7,7 @@ namespace cs {
 class Sprite;
 struct MouseEvent;
 
-class SpriteLua : public LuaObject, public INotify
+class SpriteLua : public LuaObject
 {
 protected:
     virtual ~SpriteLua();

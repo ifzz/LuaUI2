@@ -8,7 +8,7 @@ namespace cs {
 class LuaObject;
 class BitmapLua;
 
-class Bitmap : public virtual Object
+class Bitmap : public Object
 {
 public:
     Bitmap();

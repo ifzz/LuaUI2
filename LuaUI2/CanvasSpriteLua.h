@@ -6,10 +6,9 @@ namespace cs {
 
 class CanvasSpriteLua : public LuaObject
 {
-protected:
-    virtual ~CanvasSpriteLua();
 public:
     explicit CanvasSpriteLua(CanvasSprite *c);
+    virtual ~CanvasSpriteLua();
 
     static int DrawLine(lua_State *L);
     static int DrawRect(lua_State *L);

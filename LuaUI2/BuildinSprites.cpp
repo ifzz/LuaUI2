@@ -65,10 +65,13 @@ LuaObject * TextSprite::GetLuaSide()
 
 RectangleSprite::RectangleSprite() :m_color(255, 0, 255), m_borderColor(255, 0, 255)
 {
+    m_luaSide = NULL;
 }
 
 RectangleSprite::~RectangleSprite()
 {
+    delete m_luaSide;
+    m_luaSide = NULL;
 }
 
 void RectangleSprite::SetColor(Gdiplus::Color color)

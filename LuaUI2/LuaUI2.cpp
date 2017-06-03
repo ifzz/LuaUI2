@@ -136,7 +136,8 @@ extern "C" LUAUI2_API int luaopen_luaui2(lua_State *L)
 	ULONG_PTR g_gdipToken;
 	Gdiplus::GdiplusStartupInput input;
 	input.SuppressBackgroundThread = TRUE;
-	GdiplusStartup(&g_gdipToken, &input, &gdipHook);
+	UINT s = GdiplusStartup(&g_gdipToken, &input, &gdipHook);
+    assert(0 == s);
 
 	luaL_register(L, "luaui2", cfunctions);
 	

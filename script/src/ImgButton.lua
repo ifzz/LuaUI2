@@ -21,6 +21,7 @@ function ImgButton:new()
 	self._delegate = {}
 	self._canvas_event = {
 		OnDraw = function(canvas)
+      print("OnDraw ImgButton");
 			local rc_dst = self._canvas:GetRectT();
 			rc_dst.x = 0; -- gdip 的-0.5才是像素的中心
 			rc_dst.y = 0;

@@ -362,10 +362,12 @@ void HostWindow::OnPaint(HWND hwnd )
 	do 
 	{
 		// 测试的时候显示脏矩形
-		/*
+        /*
 		gDoubleBuffer.ResetTransform();
-		Gdiplus::Pen pen(Gdiplus::Color(255,0,255), 1.0f);
-		gDoubleBuffer.DrawRectangle(&pen, 0, 0, width - 1, height - 1);
+        Gdiplus::Pen pen(Gdiplus::Color(rand() % 256, rand() % 256, rand() % 256), 1.0f);
+		gDoubleBuffer.DrawRectangle(&pen, 1, 1, width - 1, height - 1);
+        */
+        /*
 		const int size = 10;
 		gDoubleBuffer.DrawLine(&pen, width / 2 - size, height / 2, width / 2 + size, height / 2);
 		gDoubleBuffer.DrawLine(&pen, width / 2, height / 2 - size, width / 2, height / 2 + size);

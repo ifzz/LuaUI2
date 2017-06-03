@@ -8,10 +8,9 @@ class TextSprite;
 
 class TextSpriteLua : public SpriteLua
 {
-protected:
-    ~TextSpriteLua();
 public:
     explicit TextSpriteLua(TextSprite *sp);
+    ~TextSpriteLua();
 
     static int SetText(lua_State *L);
     static int SetColor(lua_State *L);
@@ -37,10 +36,9 @@ class RectangleSprite;
 
 class RectangleSpriteLua : public SpriteLua
 {
-protected:
-    ~RectangleSpriteLua();
 public:
     explicit RectangleSpriteLua(RectangleSprite *sp); 
+    ~RectangleSpriteLua();
 
     static int SetColor(lua_State *L);
     static int SetBorderColor(lua_State *L);

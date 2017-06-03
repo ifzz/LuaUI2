@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CanvasSpriteLua.h"
 #include "LuaBitmap.h"
+#include "LBitmap.h"
 
 extern lua_State *g_L;
 
@@ -95,7 +96,8 @@ int CanvasSpriteLua::MeasureString(lua_State *L)
 int CanvasSpriteLua::DrawBitmap(lua_State *L)
 {
     CanvasSprite *thiz = CheckLuaObject<CanvasSpriteLua>(L, 1)->canvas;
-    Bitmap *bmp = reinterpret_cast<Bitmap *>(CheckLuaObject<BitmapLua>(L, 2)->GetCppSide());
+    BitmapLua *bmp_l = CheckLuaObject<BitmapLua>(L, 2);
+    Bitmap *bmp = dynamic_cast<Bitmap *>(bmp_l->GetCppSide());
     //if (!thiz->m_pGraphics)
     //    luaL_error(L, "no graphics");
     if (lua_istable(L, 3) && lua_istable(L, 4))

@@ -25,6 +25,8 @@ CanvasSprite::~CanvasSprite(void)
 {
 	delete m_font;
 	m_font = NULL;
+    delete m_luaSide;
+    m_luaSide = NULL;
 }
 
 /*

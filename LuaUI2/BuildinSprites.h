@@ -57,7 +57,7 @@ private:
     Gdiplus::Color m_color;
     Gdiplus::Color m_borderColor;
 
-    RectangleSpriteLua *m_luaSide = nullptr;
+    RectangleSpriteLua *m_luaSide;
     DISALLOW_COPY_AND_ASSIGN(RectangleSprite);
 };
 
