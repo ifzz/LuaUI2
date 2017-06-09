@@ -68,7 +68,7 @@ static int l_SafeWriteFile(lua_State *L)
 
 static int l_PathFileExists(lua_State *L)
 {
-	CStringW path = luaL_checkwstring(L, 1);
+	CStringW path = LuaCheckWString(L, 1);
 	BOOL ret = ::PathFileExists(path);
 	lua_pushboolean(L, ret);
 	return 1;
@@ -85,7 +85,7 @@ static int l_Trace(lua_State *L)
 			log.AppendFormat(L"%.2f ", lua_tonumber(L, i));
 			break;
 		case LUA_TSTRING:
-			log.AppendFormat(L"%s ", luaL_checkwstring(L, i));
+			log.AppendFormat(L"%s ", LuaCheckWString(L, i));
 			break;
 		default:
 			log.AppendFormat(L"(%S:%p) ", lua_typename(L, lua_type(L, i)), lua_topointer(L, i));
@@ -113,7 +113,7 @@ static int l_GetModuleFileName(lua_State *L)
 	}
 	wchar_t path[MAX_PATH];
 	::GetModuleFileNameW((HMODULE)hMod, path, MAX_PATH);
-	luaL_pushwstring(L, path);
+	LuaPushWString(L, path);
 	//CStringA str = Utf16ToUtf8(path, wcslen(path));
 	//lua_pushstring(L, str);
 	return 1;
@@ -129,7 +129,7 @@ static int l_SHGetFolderPath(lua_State *L)
 	wchar_t path[MAX_PATH];
 	if (SUCCEEDED(::SHGetFolderPath(NULL, folder, NULL, SHGFP_TYPE_CURRENT, path)))
 	{
-		luaL_pushwstring(L, path);
+		LuaPushWString(L, path);
 		return 1;
 	}
 	return 0;
@@ -148,7 +148,7 @@ static int l_GetOpenFileName(lua_State *L)
         lua_gettable(L, 1); // t1[i]
         if (lua_type(L, -1) == LUA_TSTRING)
         {
-            CStringW str =  luaL_checkwstring(L, -1);
+            CStringW str =  LuaCheckWString(L, -1);
             for (int j = 0; j < str.GetLength(); j++)
             {
                 filters.push_back(str.GetAt(j));
@@ -184,7 +184,7 @@ static int l_GetOpenFileName(lua_State *L)
     BOOL ret = ::GetOpenFileName(&ofn);
     if (ret)
     {
-        luaL_pushwstring(L, buf);
+        LuaPushWString(L, buf);
         return 1;
     }
     else

@@ -128,7 +128,7 @@ LRESULT CALLBACK HostWindow::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM 
 	return 0;
 }
 
-void HostWindow::OnMouseEvent(lua_State *L, UINT message, WPARAM wparam, LPARAM lparam)
+void HostWindow::HandleMouseMessage(lua_State *L, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	MouseEvent event;
 	event.message = message;
@@ -234,7 +234,7 @@ int HostWindow::LuaHandleMessage( lua_State *L )
 	case WM_RBUTTONUP:
 	case WM_LBUTTONDBLCLK:
 	case WM_MOUSEWHEEL:
-		thiz->OnMouseEvent(L, message, wparam, lparam);
+		thiz->HandleMouseMessage(L, message, wparam, lparam);
 		break;
 	case WM_ERASEBKGND:
 		lua_pushinteger(L, TRUE);

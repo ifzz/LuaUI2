@@ -33,7 +33,7 @@ int CanvasSpriteLua::DrawLine(lua_State *L)
 int CanvasSpriteLua::DrawRect(lua_State *L)
 {
     CanvasSprite *thiz = CheckLuaObject<CanvasSpriteLua>(L, 1)->canvas;
-    Gdiplus::RectF rc = luaL_checkrectf(L, 2);
+    Gdiplus::RectF rc = LuaCheckRectF(L, 2);
     thiz->DrawRect(rc);
     return 0;
 }
@@ -42,7 +42,7 @@ int CanvasSpriteLua::DrawChar(lua_State *L)
 {
     CanvasSprite *thiz = CheckLuaObject<CanvasSpriteLua>(L, 1)->canvas;
 
-    wchar_t ch = luaL_checkinteger(L, 2);
+    wchar_t ch = (wchar_t)luaL_checkinteger(L, 2);
     Gdiplus::PointF p1;
     p1.X = (float)luaL_checknumber(L, 3);
     p1.Y = (float)luaL_checknumber(L, 4);
@@ -53,7 +53,7 @@ int CanvasSpriteLua::DrawChar(lua_State *L)
 int CanvasSpriteLua::MeasureChar(lua_State *L)
 {
     CanvasSprite *thiz = CheckLuaObject<CanvasSpriteLua>(L, 1)->canvas;
-    wchar_t ch = luaL_checkinteger(L, 2);
+    wchar_t ch = (wchar_t)luaL_checkinteger(L, 2);
     Gdiplus::RectF rc = thiz->MeasureChar(ch);
     lua_pushnumber(L, rc.Width);
     lua_pushnumber(L, rc.Height);
@@ -63,8 +63,8 @@ int CanvasSpriteLua::MeasureChar(lua_State *L)
 int CanvasSpriteLua::DrawString(lua_State *L)
 {
     CanvasSprite *thiz = CheckLuaObject<CanvasSpriteLua>(L, 1)->canvas;
-    CStringW text = luaL_checkwstring(L, 2);
-    Gdiplus::RectF rc = luaL_checkrectf(L, 3);
+    CStringW text = LuaCheckWString(L, 2);
+    Gdiplus::RectF rc = LuaCheckRectF(L, 3);
     UINT hAlign = 0;
     if (lua_gettop(L) >= 4)
     {
@@ -84,8 +84,8 @@ int CanvasSpriteLua::MeasureString(lua_State *L)
 {
     CanvasSprite *thiz = CheckLuaObject<CanvasSpriteLua>(L, 1)->canvas;
 
-    CStringW str = luaL_checkwstring(L, 2);
-    Gdiplus::RectF rc = luaL_checkrectf(L, 3);
+    CStringW str = LuaCheckWString(L, 2);
+    Gdiplus::RectF rc = LuaCheckRectF(L, 3);
     //const char* align = luaL_checkstring(L, 4);
     Gdiplus::RectF rcOut;
     thiz->MeasureString(str, rc, &rcOut);
@@ -102,8 +102,8 @@ int CanvasSpriteLua::DrawBitmap(lua_State *L)
     //    luaL_error(L, "no graphics");
     if (lua_istable(L, 3) && lua_istable(L, 4))
     {
-        Gdiplus::RectF rcSrc = luaL_checkrectf(L, 3);
-        Gdiplus::RectF rcDst = luaL_checkrectf(L, 4);
+        Gdiplus::RectF rcSrc = LuaCheckRectF(L, 3);
+        Gdiplus::RectF rcDst = LuaCheckRectF(L, 4);
         thiz->DrawBitmap(bmp, rcSrc, rcDst);
     }
     else if (lua_gettop(L) == 8)
@@ -144,7 +144,7 @@ int CanvasSpriteLua::SetColor(lua_State *L)
 int CanvasSpriteLua::SetFont(lua_State *L)
 {
     CanvasSprite *thiz = CheckLuaObject<CanvasSpriteLua>(L, 1)->canvas;
-    CStringW family = luaL_checkwstring(L, 2);
+    CStringW family = LuaCheckWString(L, 2);
     float size = (float)luaL_checknumber(L, 3);
     int style = luaL_checkinteger(L, 4);
     if (!thiz->SetFont(family, size, style))

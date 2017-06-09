@@ -29,11 +29,6 @@ public:
 
 	virtual void OnKillFocus();
 
-	//BEGIN_LUA_METHOD_MAP(EditSprite)
-	//	//LUA_METHOD_ENTRY(GetText)
-	//	LUA_CHAIN_METHOD_MAP(SpriteLua)
-	//END_LUA_METHOD_MAP()
-
 private:
 	struct TextInfo
 	{

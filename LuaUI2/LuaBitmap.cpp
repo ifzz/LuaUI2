@@ -16,7 +16,7 @@ BitmapLua::~BitmapLua()
 int BitmapLua::LoadFromFile(lua_State *L)
 {
     Bitmap *thiz = CheckLuaObject<BitmapLua>(L, 1)->m_bmp;
-    CString path =  luaL_checkwstring(L, 2);
+    CString path =  LuaCheckWString(L, 2);
     bool ret = thiz->LoadFromFile(path);
     lua_pushboolean(L, ret ? 1 : 0);
     return 1;

@@ -129,7 +129,6 @@ public:
     virtual LuaObject *GetLuaSide();
 
     void SendNotify(UINT idMessage, void *message);
-    void SetNotify(INotify *notify);
 
     enum State {
         sVisible = 0x01,
@@ -157,7 +156,6 @@ private:
 
     UINT m_id;
 
-    INotify *m_notify;
 	SpriteLua *m_luaSide;
 
 	DISALLOW_COPY_AND_ASSIGN(Sprite);

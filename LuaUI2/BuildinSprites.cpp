@@ -19,9 +19,9 @@ TextSprite::TextSprite() :m_color(255, 0, 255)
 TextSprite::~TextSprite()
 {
     delete m_font;
-    m_font = NULL;
+    m_font = INVALID_POINTER(Gdiplus::Font);
     delete m_luaSide;
-    m_luaSide = NULL;
+    m_luaSide = INVALID_POINTER(TextSpriteLua);
 }
 
 void TextSprite::SetText(LPCTSTR text)
@@ -85,7 +85,7 @@ RectangleSprite::RectangleSprite() :m_color(255, 0, 255), m_borderColor(255, 0, 
 RectangleSprite::~RectangleSprite()
 {
     delete m_luaSide;
-    m_luaSide = NULL;
+    m_luaSide = INVALID_POINTER(RectangleSpriteLua);
 }
 
 void RectangleSprite::SetColor(Gdiplus::Color color)

@@ -243,7 +243,7 @@ int SpriteLua::RemoveChild(lua_State *L)
 
 //////////////////////////////////////////////////////////////////////////
 
-bool SpriteLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *message)
+bool SpriteLua::OnNotify(UINT idMessage, void *message)
 {
     lua_State *L = g_L;
     switch (idMessage)
@@ -340,7 +340,7 @@ int SpriteLua::ShowCaret(lua_State *L)
 int SpriteLua::SetCaretPos(lua_State *L)
 {
     Sprite *thiz = CheckLuaObject<SpriteLua>(L, 1)->m_sp;
-    Gdiplus::RectF rc = luaL_checkrectf(L, 2);
+    Gdiplus::RectF rc = LuaCheckRectF(L, 2);
     thiz->SetCaretPos(rc);
     return 0;
 }

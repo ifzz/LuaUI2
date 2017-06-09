@@ -32,7 +32,7 @@ public:
 	// 把这个对象放入lua中 创建一个新的userdata包裹之 引用计数+1 lua栈+1
 	void PushToLua(lua_State *L);
 
-    virtual bool OnNotify(UINT idSender, void *sender, UINT idMessage, void *message) { return false; };
+    virtual bool OnNotify(UINT idMessage, void *message) { return false; };
 
 	bool InvokeCallback(lua_State *L, const char *name, int nargs, int nresult);
 

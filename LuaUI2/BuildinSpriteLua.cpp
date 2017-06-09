@@ -23,7 +23,7 @@ Object * TextSpriteLua::GetCppSide()
 int TextSpriteLua::SetText(lua_State *L)
 {
     TextSprite *thiz = CheckLuaObject<TextSpriteLua>(L, 1)->m_sp;
-    CString str = luaL_checkwstring(L, 2);
+    CString str = LuaCheckWString(L, 2);
     thiz->SetText(str);
     return 0;
 }
@@ -31,7 +31,7 @@ int TextSpriteLua::SetText(lua_State *L)
 int TextSpriteLua::SetFont(lua_State *L)
 {
     TextSprite *thiz = CheckLuaObject<TextSpriteLua>(L, 1)->m_sp;
-    CString face = luaL_checkwstring(L, 2);
+    CString face = LuaCheckWString(L, 2);
     float size = (float)luaL_checknumber(L, 3);
     int style = luaL_checkinteger(L, 4);
     thiz->SetFont(face, size, style);
@@ -41,7 +41,7 @@ int TextSpriteLua::SetFont(lua_State *L)
 int TextSpriteLua::SetColor(lua_State *L)
 {
     TextSprite *thiz = CheckLuaObject<TextSpriteLua>(L, 1)->m_sp;
-    Gdiplus::Color color = luaL_checkcolor(L, 2);
+    Gdiplus::Color color = LuaCheckColor(L, 2);
     thiz->SetColor(color);
     return 0;
 }
@@ -61,7 +61,7 @@ RectangleSpriteLua::~RectangleSpriteLua()
 int RectangleSpriteLua::SetColor(lua_State *L)
 {
     RectangleSprite *thiz = CheckLuaObject<RectangleSpriteLua>(L, 1)->m_sp;
-    Gdiplus::Color color = luaL_checkcolor(L, 2);
+    Gdiplus::Color color = LuaCheckColor(L, 2);
     thiz->SetColor(color);
     return 0;
 }
@@ -69,7 +69,7 @@ int RectangleSpriteLua::SetColor(lua_State *L)
 int RectangleSpriteLua::SetBorderColor(lua_State *L)
 {
     RectangleSprite *thiz = CheckLuaObject<RectangleSpriteLua>(L, 1)->m_sp;
-    Gdiplus::Color color = luaL_checkcolor(L, 2);
+    Gdiplus::Color color = LuaCheckColor(L, 2);
     thiz->SetBorderColor(color);
     return 0;
 }

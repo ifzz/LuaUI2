@@ -8,7 +8,7 @@ namespace cs {
 class HostWindow;
 
 // TODO ¸Ä³ÉNativeWindow
-class HostWindowLua : public LuaObject, public INotify, public IMessageHandler
+class HostWindowLua : public LuaObject, public IMessageHandler
 {
 public:
     explicit HostWindowLua(HostWindow *wnd);
@@ -28,7 +28,7 @@ public:
 
     virtual Object * GetCppSide();
 
-    virtual bool OnNotify(UINT idSender, void *sender, UINT idMessage, void *message);
+    virtual bool OnNotify(UINT idMessage, void *message);
 
     LRESULT HandleMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, bool &bHandled);
 

@@ -20,7 +20,7 @@ bool LuaPCall(lua_State *L, int nargs, int nresults)
 		assert(lua_isstring(L, -1));
 		const char *pszError = lua_tostring(L, -1);//luaL_checkstring(L, -1);
 		int msg = lua_gettop(L); // msg
-		// 3种错误输出的选择 选那个? TODO FIXME
+		// 3种错误输出的选择 选那个?
 		lua_getglobal(L, "print"); // msg, print
 		if (lua_isfunction(L, -1))
 		{
@@ -137,8 +137,8 @@ CStringA Utf16ToUtf8(LPCTSTR strW, int len)
 
 // 网上说有点不安全 希望能找到更好的版本 比如gtk内部带的  TODO fltk里面有 (2016-08-23)
 ///Returns -1 if string is valid. Invalid character is put to ch.
-int getInvalidUtf8SymbolPosition(const char *input, char &ch) {
-	int                 nb, na;
+int GetInvalidUtf8SymbolPosition(const char *input, char &ch) {
+	int                 nb = 0, na = 0;
 	const char *c = input;
 
 	for (c = input; *c; c += (nb + 1)) {
@@ -173,18 +173,18 @@ int getInvalidUtf8SymbolPosition(const char *input, char &ch) {
 
 // 如果这个函数调用之后 再check XX的话会导致内存泄漏 因为lua用longjump 栈上对象没有析构
 // 貌似lua可以配置成用c++exception处理错误 2014-10-30 1625 发现lua和c++一起编译的话是用异常
-CString luaL_checkwstring(lua_State *L, int index)
+CString LuaCheckWString(lua_State *L, int index)
 {
 	size_t len;
 	const char *pText = luaL_checklstring(L, index, &len);
 	char ivc;
-	if (getInvalidUtf8SymbolPosition(pText, ivc) == -1)
+	if (GetInvalidUtf8SymbolPosition(pText, ivc) == -1)
 		return Utf8ToUtf16(pText, len);
 	else
 		return L"invalide utf8 string";
 }
 
-void luaL_pushwstring(lua_State *L, LPCTSTR psz, int len /* = -1 */)
+void LuaPushWString(lua_State *L, LPCTSTR psz, int len /* = -1 */)
 {
 	if (len < 0)
 	{
@@ -194,7 +194,7 @@ void luaL_pushwstring(lua_State *L, LPCTSTR psz, int len /* = -1 */)
 	lua_pushlstring(L, strA, strA.GetLength());
 }
 
-Gdiplus::Color luaL_checkcolor(lua_State *L, int index)
+Gdiplus::Color LuaCheckColor(lua_State *L, int index)
 {
 	double r = luaL_checknumber(L, index + 0);
 	double g = luaL_checknumber(L, index + 1);
@@ -222,7 +222,7 @@ void LuaShowStack(lua_State *L)
 	OutputDebugStringA(msg);
 }
 
-Gdiplus::RectF luaL_checkrectf( lua_State *L, int index )
+Gdiplus::RectF LuaCheckRectF( lua_State *L, int index )
 {
 	Gdiplus::RectF rc;
 	luaL_checktype(L, index, LUA_TTABLE);

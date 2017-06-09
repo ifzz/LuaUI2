@@ -34,7 +34,6 @@ Sprite::Sprite(void)
     m_bShowCaret = false;
 
     m_luaSide = NULL;
-    m_notify = NULL;
 }
 
 Sprite::~Sprite(void)
@@ -47,13 +46,15 @@ Sprite::~Sprite(void)
 		sp->Unref(); // FIXME 有没有想过这里其实如果数量太多 会不会爆栈呢? 事实上是一个递归调用.
 		sp = tmp;
 	}
-	m_firstChild = NULL;
-	m_lastChild = NULL;
-	m_prevSibling = NULL;
-	m_nextSibling = NULL;
-	m_parent = NULL;
+	m_firstChild = INVALID_POINTER(Sprite);
+    m_lastChild = INVALID_POINTER(Sprite);
+    m_prevSibling = INVALID_POINTER(Sprite);
+    m_nextSibling = INVALID_POINTER(Sprite);
+    m_parent = INVALID_POINTER(Sprite);
+    //ClearPointer(m_parent);
 
     delete m_luaSide;
+    m_luaSide = INVALID_POINTER(SpriteLua);
 	LOG(<<"sprite deleted"); // TODO 加个名字
 }
 
@@ -536,17 +537,7 @@ LuaObject * Sprite::GetLuaSide()
 
 void Sprite::SendNotify(UINT idMessage, void *message)
 {
-    if (m_notify)
-    {
-        if (m_notify->OnNotify(m_id, this, idMessage, message))
-            return;
-    }
-    GetLuaSide()->OnNotify(m_id, this, idMessage, message);
-}
-
-void Sprite::SetNotify(INotify *notify)
-{
-    m_notify = notify;
+    GetLuaSide()->OnNotify(idMessage, message);
 }
 
 } // namespace cs

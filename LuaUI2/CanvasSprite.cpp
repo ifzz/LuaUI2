@@ -24,9 +24,9 @@ CanvasSprite::CanvasSprite(Gdiplus::Graphics *g) :
 CanvasSprite::~CanvasSprite(void)
 {
 	delete m_font;
-	m_font = NULL;
+	m_font = INVALID_POINTER(Gdiplus::Font);
     delete m_luaSide;
-    m_luaSide = NULL;
+    m_luaSide = INVALID_POINTER(CanvasSpriteLua);
 }
 
 /*

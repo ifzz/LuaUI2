@@ -59,9 +59,9 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4996;4250</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4250;4100;4189</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>lua51.lib;gdiplus.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -80,9 +80,9 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4996;4250</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4996;4250;4100;4189</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>lua51.lib;gdiplus.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -109,6 +109,7 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="EditSprite.cpp" />
+    <ClCompile Include="EditSpriteLua.cpp" />
     <ClCompile Include="HostWindow.cpp" />
     <ClCompile Include="HostWindowLua.cpp" />
     <ClCompile Include="ImeInput.cpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="CanvasSpriteLua.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="EditSprite.h" />
+    <ClInclude Include="EditSpriteLua.h" />
     <ClInclude Include="HostWindow.h" />
     <ClInclude Include="HostWindowLua.h" />
     <ClInclude Include="ImeInput.h" />

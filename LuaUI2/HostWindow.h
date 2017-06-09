@@ -75,7 +75,7 @@ public:
     };
 
 private:
-	void OnMouseEvent(lua_State *L, UINT message, WPARAM wparam, LPARAM lparam);
+	void HandleMouseMessage(lua_State *L, UINT message, WPARAM wparam, LPARAM lparam);
 	LRESULT OnImeEvent(lua_State *L, UINT message, WPARAM wparam, LPARAM lparam);
 	void SetGdipMode(Gdiplus::Graphics &g);
 

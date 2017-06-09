@@ -26,7 +26,7 @@ int HostWindowLua::Create(lua_State *L)
     }
     DWORD exStyle = luaL_checkinteger(L, 2);
     DWORD style = luaL_checkinteger(L, 3);
-    Gdiplus::RectF rc = luaL_checkrectf(L, 4);
+    Gdiplus::RectF rc = LuaCheckRectF(L, 4);
 
     HostWindow *parent = NULL;
     if (lua_isuserdata(L, 5))
@@ -49,7 +49,7 @@ int HostWindowLua::AttachSprite(lua_State *L)
 int HostWindowLua::SetRect(lua_State *L)
 {
     HostWindow *thiz = CheckLuaObject<HostWindowLua>(L, 1)->m_wnd;
-    Gdiplus::RectF rc = luaL_checkrectf(L, 2);
+    Gdiplus::RectF rc = LuaCheckRectF(L, 2);
 
     if (thiz->GetHWND())
     {
@@ -92,7 +92,7 @@ Object * HostWindowLua::GetCppSide()
     return m_wnd;
 }
 
-bool HostWindowLua::OnNotify(UINT idSender, void *sender, UINT idMessage, void *message)
+bool HostWindowLua::OnNotify(UINT idMessage, void *message)
 {
     return false;
 }

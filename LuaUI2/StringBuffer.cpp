@@ -32,7 +32,7 @@ int StringBuffer::Append(lua_State *L)
         case LUA_TSTRING:
             do
             {
-                CString str = luaL_checkwstring(L, i);
+                CString str = LuaCheckWString(L, i);
                 thiz->m_str.append((LPCWSTR)str);
             } while (0);
             break;

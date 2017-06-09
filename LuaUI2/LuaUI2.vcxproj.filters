@@ -90,6 +90,9 @@
     <ClCompile Include="BuildinSpriteLua.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EditSpriteLua.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h">
@@ -159,6 +162,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HostWindowLua.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditSpriteLua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
